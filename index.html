@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login - Investment App</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="login-container">
+    <!-- Logo -->
+    <img src="https://i.supaimg.com/c3856786-edd2-402a-9a14-32d60a5a0118.png" alt="Logo" class="logo">
+
+    <!-- New to the platform -->
+    <div class="register-section">
+      <span>Don't have an account?</span>
+      <button onclick="window.location.href='register.html'" class="register-btn">Register</button>
+    </div>
+
+    <!-- Login form -->
+    <h2>Login to your account</h2>
+
+    <label>Email</label>
+    <input id="loginEmail" type="email" placeholder="Enter your email" required>
+
+    <label>Password</label>
+    <input id="loginPassword" type="password" placeholder="Enter your password" required>
+
+    <button onclick="login()" class="login-btn">Login</button>
+
+    <p class="footer">Copyright 2025 My Investment App all rights reserved.</p>
+  </div>
+
+  <script>
+    async function login() {
+      const email = document.getElementById("loginEmail").value.trim();
+      const password = document.getElementById("loginPassword").value.trim();
+
+      if (!email || !password) {
+        alert("⚠️ Please fill in all fields.");
+        return;
+      }
+
+      try {
+        const res = await fetch("https://harvestive-co-backend.onrender.com/login", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email, password })
+        });
+
+        const data = await res.json();
+
+        if (res.ok && data.token) {
+          localStorage.setItem("token", data.token);
+          window.location.href = "dashboard.html"; // ✅ redirect after login
+        } else {
+          alert(data.error || "Login failed.");
+        }
+      } catch (err) {
+        console.error(err);
+        alert("❌ Error connecting to server.");
+      }
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Deposit</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #fff;
+      color: #333;
+      margin: 0;
+      padding: 0;
+    }
+
+    .deposit-container {
+      max-width: 400px;
+      margin: 50px auto;
+      padding: 25px;
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+      border: 2px solid #d4af37; /* gold border */
+    }
+
+    h2 {
+      text-align: center;
+      color: #d4af37;
+      margin-bottom: 20px;
+    }
+
+    label {
+      display: block;
+      margin-top: 15px;
+      font-weight: bold;
+      color: #555;
+    }
+
+    input, select, button {
+      width: 100%;
+      padding: 12px;
+      margin-top: 8px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      font-size: 15px;
+    }
+
+    input:focus, select:focus {
+      border-color: #d4af37;
+      outline: none;
+    }
+
+    .note {
+      font-size: 13px;
+      color: #b59428;
+      margin-top: 4px;
+    }
+
+    button {
+      background: #d4af37;
+      color: white;
+      border: none;
+      cursor: pointer;
+      font-weight: bold;
+      transition: 0.3s;
+    }
+
+    button:hover {
+      background: #b59428;
+    }
+
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 10;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.6);
+      justify-content: center;
+      align-items: center;
+    }
+
+    .modal-content {
+      background: #fff;
+      padding: 25px;
+      border-radius: 12px;
+      text-align: center;
+      width: 90%;
+      max-width: 400px;
+      border: 2px solid #d4af37;
+    }
+
+    .modal button {
+      width: auto;
+      margin: 10px;
+    }
+
+    .qr-img {
+      max-width: 140px;
+      margin: 10px auto;
+      display: block;
+      border: 2px solid #d4af37;
+      border-radius: 8px;
+    }
+
+    .wallet-box {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: #f9f9f9;
+      padding: 8px 10px;
+      border-radius: 6px;
+      border: 1px solid #ddd;
+    }
+
+    .wallet-text {
+      word-break: break-all;
+      font-size: 14px;
+      color: #333;
+    }
+
+    .copy-btn {
+      background: #d4af37;
+      color: #fff;
+      border: none;
+      padding: 6px 10px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 13px;
+      transition: 0.3s;
+    }
+
+    .copy-btn:hover {
+      background: #b59428;
+    }
+
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      display: flex;
+      justify-content: space-around;
+      background: #fff;
+      border-top: 2px solid #d4af37;
+      padding: 10px 0;
+    }
+
+    .bottom-nav a {
+      text-align: center;
+      text-decoration: none;
+      color: #333;
+      font-size: 14px;
+    }
+
+    .bottom-nav a.active {
+      color: #d4af37;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <div class="deposit-container">
+    <h2>Deposit</h2>
+
+    <form id="depositForm">
+      <label>Amount (USD)</label>
+      <input type="number" id="depositAmount" required placeholder="Enter amount">
+      <div class="note">Minimum deposit is 5000 USD</div>
+
+      <label>Select Method</label>
+      <select id="depositMethod" required onchange="updateMethodDetails()">
+        <option value="">Loading...</option>
+      </select>
+
+      <div id="methodDetails" style="margin:15px 0; display:none;">
+        <p><b>Wallet Address:</b></p>
+        <div class="wallet-box">
+          <span id="walletAddress" class="wallet-text"></span>
+          <button type="button" class="copy-btn" onclick="copyAddress()">Copy</button>
+        </div>
+        <img id="walletQR" class="qr-img" alt="QR Code">
+      </div>
+
+      <label>Upload Payment Proof</label>
+      <input type="file" id="screenshot" accept="image/*" required>
+
+      <button type="button" onclick="openConfirmModal()">I Have Paid</button>
+    </form>
+  </div>
+
+  <!-- Confirmation Modal -->
+  <div id="confirmModal" class="modal">
+    <div class="modal-content">
+      <h3>Are you sure you have paid?</h3>
+      <button onclick="submitDeposit()">Yes</button>
+      <button onclick="closeConfirmModal()">No</button>
+    </div>
+  </div>
+
+  <!-- Bottom Navigation -->
+  <div class="bottom-nav">
+    <a href="deposit.html" class="active"><i class="fas fa-wallet"></i><br>Deposit</a>
+    <a href="invest.html"><i class="fas fa-piggy-bank"></i><br>My invest</a>
+    <a href="dashboard.html"><i class="fas fa-home"></i><br>Home</a>
+    <a href="withdraw.html"><i class="fas fa-money-bill"></i><br>Withdraw</a>
+    <a href="transfer.html"><i class="fas fa-exchange-alt"></i><br>Transfer</a>
+  </div>
+
+  <script>
+    let depositMethods = [];
+
+    async function loadDepositMethods() {
+      try {
+        const res = await fetch("https://harvestive-co-backend.onrender.com/user/deposit-methods");
+        const methods = await res.json();
+        depositMethods = methods;
+
+        const select = document.getElementById("depositMethod");
+        select.innerHTML = "";
+
+        if (!methods.length) {
+          select.innerHTML = "<option value=''>No methods available</option>";
+          document.getElementById("methodDetails").style.display = "none";
+          return;
+        }
+
+        methods.forEach(m => {
+          const opt = document.createElement("option");
+          opt.value = m._id;
+          opt.textContent = m.name;
+          select.appendChild(opt);
+        });
+
+        updateMethodDetails();
+      } catch (err) {
+        console.error(err);
+        alert("Error loading deposit methods.");
+      }
+    }
+
+    function updateMethodDetails() {
+      const id = document.getElementById("depositMethod").value;
+      const method = depositMethods.find(m => m._id === id);
+
+      if (method) {
+        document.getElementById("walletAddress").innerText = method.address;
+        document.getElementById("walletQR").src = method.qr;
+        document.getElementById("methodDetails").style.display = "block";
+      } else {
+        document.getElementById("methodDetails").style.display = "none";
+      }
+    }
+
+    function copyAddress() {
+      const address = document.getElementById("walletAddress").innerText;
+      if (!address) return;
+      navigator.clipboard.writeText(address).then(() => {
+        alert("Wallet address copied!");
+      });
+    }
+
+    function openConfirmModal() {
+      document.getElementById("confirmModal").style.display = "flex";
+    }
+
+    function closeConfirmModal() {
+      document.getElementById("confirmModal").style.display = "none";
+    }
+
+    async function submitDeposit() {
+      const amount = parseFloat(document.getElementById("depositAmount").value);
+      const methodId = document.getElementById("depositMethod").value;
+      const screenshot = document.getElementById("screenshot").files[0];
+
+      if (!amount || !methodId || !screenshot) {
+        alert("Please fill all fields and upload proof.");
+        return;
+      }
+
+      // ✅ enforce minimum 5000
+      if (amount < 5000) {
+        alert("Minimum deposit is 5000 USD");
+        return;
+      }
+
+      const token = localStorage.getItem("token");
+      if (!token) {
+        alert("You must be logged in.");
+        window.location.href = "index.html";
+        return;
+      }
+
+      const formData = new FormData();
+      formData.append("amount", amount);
+      formData.append("method", methodId);
+      formData.append("screenshot", screenshot);
+
+      try {
+        const res = await fetch("https://harvestive-co-backend.onrender.com/deposit", {
+          method: "POST",
+          headers: { Authorization: `Bearer ${token}` },
+          body: formData
+        });
+
+        const data = await res.json();
+        if (res.ok) {
+          alert(data.message || "Deposit submitted! Waiting for admin approval.");
+          window.location.href = "dashboard.html";
+        } else {
+          alert(data.error || "Deposit failed.");
+        }
+      } catch (err) {
+        console.error(err);
+        alert("Error submitting deposit.");
+      }
+
+      closeConfirmModal();
+    }
+
+    window.onload = loadDepositMethods;
+  </script>
+</body>
+</html>

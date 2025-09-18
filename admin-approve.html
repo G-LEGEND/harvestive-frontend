@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin - Approve Deposits</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #111;
+      color: #fff;
+      padding: 20px;
+    }
+    h2 {
+      color: #d4af37;
+      margin-bottom: 10px;
+    }
+    .section {
+      margin-bottom: 30px;
+    }
+    .deposit {
+      border: 1px solid #d4af37;
+      padding: 10px;
+      margin-bottom: 10px;
+      border-radius: 8px;
+      background: #1c1c1c;
+    }
+    .deposit p {
+      margin: 2px 0;
+      font-size: 14px;
+    }
+    .deposit img {
+      max-width: 120px;
+      display: block;
+      margin: 6px 0;
+      border: 1px solid #444;
+      border-radius: 6px;
+    }
+    button {
+      margin-top: 5px;
+      padding: 6px 12px;
+      border: none;
+      background: #d4af37;
+      color: #111;
+      cursor: pointer;
+      border-radius: 6px;
+      font-weight: bold;
+      font-size: 14px;
+    }
+    button:hover {
+      background: #b59428;
+    }
+  </style>
+</head>
+<body>
+  <h2>Pending Deposits</h2>
+  <div id="pending" class="section"></div>
+
+  <h2>Processed Deposits</h2>
+  <div id="processed" class="section"></div>
+
+  <script>
+    async function loadDeposits() {
+      const token = localStorage.getItem("adminToken");
+      if (!token) {
+        alert("⚠ Please login as admin");
+        window.location.href = "admin.html";
+        return;
+      }
+
+      try {
+        const res = await fetch("https://harvestive-co-backend.onrender.com/admin/deposits", {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        const data = await res.json();
+
+        const pending = document.getElementById("pending");
+        const processed = document.getElementById("processed");
+        pending.innerHTML = "";
+        processed.innerHTML = "";
+
+        // newest first
+        data.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+        data.forEach(dep => {
+          const div = document.createElement("div");
+          div.className = "deposit";
+          div.innerHTML = `
+            <p><b>User:</b> ${dep.userId}</p>
+            <p><b>Amount:</b> $${dep.amount}</p>
+            <p><b>Method:</b> ${dep.method}</p>
+            <p><b>Status:</b> ${dep.status}</p>
+          `;
+
+          if (dep.screenshot) {
+            const img = document.createElement("img");
+            img.src = "data:image/png;base64," + dep.screenshot;
+            div.appendChild(img);
+          }
+
+          if (dep.status === "pending") {
+            const btn = document.createElement("button");
+            btn.textContent = "Approve";
+            btn.onclick = async () => {
+              try {
+                const approve = await fetch(`https://harvestive-co-backend.onrender.com/admin/deposit/${dep._id}/approve`, {
+                  method: "POST",
+                  headers: { Authorization: `Bearer ${token}` }
+                });
+                const result = await approve.json();
+                alert(result.message || result.error);
+                loadDeposits(); // refresh
+              } catch (err) {
+                alert("Error approving deposit");
+              }
+            };
+            div.appendChild(btn);
+            pending.appendChild(div);
+          } else {
+            processed.appendChild(div);
+          }
+        });
+      } catch (err) {
+        console.error(err);
+        alert("Error loading deposits");
+      }
+    }
+
+    window.onload = loadDeposits;
+  </script>
+</body>
+</html>

@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Register - Investment App</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="login-container">
+    <!-- Logo -->
+    <img src="https://i.supaimg.com/c3856786-edd2-402a-9a14-32d60a5a0118.png" alt="Logo" class="logo">
+
+    <!-- Back to Login -->
+    <div class="register-section">
+      <span>Already have an account?</span>
+      <button onclick="window.location.href='index.html'" class="register-btn">Login</button>
+    </div>
+
+    <!-- Register form -->
+    <h2>Create your account</h2>
+
+    <label>Email</label>
+    <input id="regEmail" type="email" placeholder="Enter your email" required>
+
+    <label>Password</label>
+    <input id="regPassword" type="password" placeholder="Enter password" required>
+
+    <label>Confirm Password</label>
+    <input id="regPassword2" type="password" placeholder="Confirm password" required>
+
+    <button onclick="register()" class="login-btn">Register</button>
+
+    <p class="footer">Copyright 2025 My Investment App all rights reserved.</p>
+  </div>
+
+  <script>
+    async function register() {
+      const email = document.getElementById("regEmail").value.trim();
+      const password = document.getElementById("regPassword").value.trim();
+      const password2 = document.getElementById("regPassword2").value.trim();
+
+      if (!email || !password || !password2) {
+        alert("⚠️ Please fill in all fields.");
+        return;
+      }
+
+      if (password.length < 6) {
+        alert("⚠️ Password must be at least 6 characters.");
+        return;
+      }
+
+      if (password !== password2) {
+        alert("⚠️ Passwords do not match.");
+        return;
+      }
+
+      try {
+        const res = await fetch("https://harvestive-co-backend.onrender.com/register", {   <!-- ✅ fixed endpoint -->
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ 
+            username: email.split("@")[0], // use part of email as username
+            email, 
+            password 
+          })
+        });
+
+        const data = await res.json();
+
+        if (res.ok) {
+          alert("✅ Registration successful! Please login.");
+          window.location.href = "index.html";
+        } else {
+          alert(data.error || "Registration failed.");
+        }
+      } catch (err) {
+        console.error(err);
+        alert("❌ Error connecting to server.");
+      }
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,276 @@
+/* ================== Global Styles ================== */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: Arial, sans-serif;
+  background: #fff;
+  margin: 0;
+  padding: 0;
+}
+
+/* ================== Login & Register ================== */
+.login-container {
+  width: 90%;
+  max-width: 400px;
+  margin: 50px auto;
+  text-align: center;
+}
+
+.logo {
+  width: 150px;
+  margin-bottom: 20px;
+}
+
+.register-section {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.register-btn,
+.login-btn {
+  background: linear-gradient(to right, gold, goldenrod);
+  border: none;
+  padding: 12px 20px;
+  border-radius: 6px;
+  font-weight: bold;
+  cursor: pointer;
+  color: #000;
+}
+
+input {
+  width: 100%;
+  padding: 10px;
+  margin: 8px 0;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+}
+
+.footer {
+  margin-top: 30px;
+  font-size: 13px;
+  color: #555;
+}
+
+/* ================== Dashboard ================== */
+.dashboard-container {
+  padding: 20px;
+  margin-bottom: 80px; /* space for bottom nav */
+}
+
+.dashboard-container h2 {
+  margin-bottom: 15px;
+  font-size: 18px;
+}
+
+/* Balance Cards */
+.balance-section {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.card {
+  border-radius: 15px;
+  color: #fff;
+  text-align: left;
+  padding: 16px 18px;
+  position: relative;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.10);
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  overflow: hidden;
+}
+
+.card p {
+  font-size: 14px;
+  margin: 0;
+}
+
+.card b {
+  font-size: 20px;
+  margin-top: 5px;
+  display: block;
+}
+
+.big {
+  height: 120px;
+  min-height: 100px;
+}
+
+.small-cards {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 15px;
+}
+
+.small {
+  height: 100px;
+  min-height: 90px;
+}
+
+.card-icon {
+  display: none;
+}
+
+/* Card backgrounds */
+.balance-card { background-image: url("https://i.supaimg.com/1095bed5-4124-4665-9d6a-6e04d767c8ee.png"); }
+.withdraw-card { background-image: url("https://i.supaimg.com/672da8ec-70d0-4321-8c10-febdc39fcde1.png"); }
+.deposit-card { background-image: url("https://i.supaimg.com/98c15f1e-c3fd-4c48-ba3d-6900f7b160b3.png"); }
+.invest-card { background-image: url("https://i.supaimg.com/77f200c4-082b-49fc-ab35-e74b9639bb55.png"); }
+.current-invest-card { background-image: url("https://i.supaimg.com/92287457-80f9-442f-b8bf-8b2724f82c83.png"); }
+
+/* Options Section */
+.options-grid.single-option {
+  display: flex;
+  justify-content: center;
+  margin: 20px 0;
+}
+.options-grid .options-img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 10px;
+  display: block;
+}
+
+/* Referral Section */
+.referral-section {
+  margin-top: 20px;
+}
+.referral-box {
+  display: flex;
+}
+.referral-box input {
+  flex: 1;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 8px 0 0 8px;
+  outline: none;
+  background: #fff;
+  color: #333;
+}
+.referral-box button {
+  padding: 10px 20px;
+  background: linear-gradient(45deg, #f1c40f, #f39c12);
+  color: #fff;
+  font-weight: bold;
+  border: none;
+  border-radius: 0 8px 8px 0;
+  cursor: pointer;
+}
+.referral-box button:hover { opacity: 0.95; }
+
+/* Bottom navigation */
+.bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  display: flex;
+  justify-content: space-around;
+  background: #fff;
+  border-top: 1px solid #ddd;
+  padding: 10px 0;
+  font-size: 12px;
+  z-index: 999;
+}
+.bottom-nav a {
+  text-decoration: none;
+  color: #555;
+  text-align: center;
+}
+.bottom-nav a.active {
+  color: #000;
+  font-weight: bold;
+}
+.bottom-nav i {
+  font-size: 16px;
+  display: block;
+  margin-bottom: 3px;
+}
+
+/* ================== Deposit Page ================== */
+.deposit-container {
+  padding: 20px;
+}
+.payment-option {
+  background: #fff;
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 20px;
+  text-align: center;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+.payment-img {
+  width: 100%;
+  max-width: 250px;
+  margin-bottom: 15px;
+}
+.gold-btn {
+  background: linear-gradient(45deg, gold, goldenrod);
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  color: #000;
+  font-weight: bold;
+  cursor: pointer;
+}
+.red-btn {
+  background: #e74c3c;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  color: #fff;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+/* Modal */
+.modal {
+  display: none;
+  position: fixed;
+  z-index: 1000;
+  left: 0; top: 0;
+  width: 100%; height: 100%;
+  background-color: rgba(0,0,0,0.5);
+  justify-content: center;
+  align-items: center;
+}
+.modal-content {
+  background: #fff;
+  border-radius: 12px;
+  padding: 20px;
+  width: 90%;
+  max-width: 400px;
+}
+.close-btn {
+  float: right;
+  font-size: 24px;
+  cursor: pointer;
+}
+
+/* Payment info & QR */
+.payment-info {
+  padding: 20px;
+}
+.payment-info .qr-img {
+  max-width: 150px;
+  margin-top: 10px;
+  border-radius: 8px;
+}
+
+/* Responsive */
+@media (min-width: 700px) {
+  .balance-section { flex-direction: row; gap: 20px; }
+  .big { flex: 1 1 50%; }
+  .small-cards { flex: 1 1 50%; grid-template-columns: repeat(2, 1fr); gap: 15px; }
+}

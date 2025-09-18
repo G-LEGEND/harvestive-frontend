@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <style>
+    .options-img {
+      transition: transform 0.2s ease, opacity 0.2s ease;
+      cursor: pointer;
+    }
+    .options-img:hover {
+      transform: scale(1.05);
+      opacity: 0.9;
+    }
+
+    /* Spinner */
+    .spinner {
+      border: 4px solid #f3f3f3;
+      border-top: 4px solid #d4af37;
+      border-radius: 50%;
+      width: 30px;
+      height: 30px;
+      animation: spin 1s linear infinite;
+      margin: 15px auto;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    #loading {
+      text-align: center;
+      color: #555;
+      font-size: 14px;
+      display: none;
+    }
+
+    /* Customer Service Section */
+    .support-section {
+      margin-top: 25px;
+      text-align: center;
+      font-size: 14px;
+      color: #333;
+    }
+    .support-section a {
+      color: #d4af37;
+      font-weight: bold;
+      text-decoration: none;
+    }
+    .support-section a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <div class="dashboard-container">
+    <h2 id="welcomeText">Welcome, User</h2>
+
+    <div class="balance-section">
+      <div class="card big balance-card">
+        <p>Account balance</p>
+        <b id="balance">0.00 USD</b>
+      </div>
+
+      <div class="small-cards">
+        <div class="card small withdraw-card">
+          <p>Total withdraw</p>
+          <b id="withdraw">0.00 USD</b>
+        </div>
+        <div class="card small deposit-card">
+          <p>Total deposit</p>
+          <b id="deposit">0.00 USD</b>
+        </div>
+        <div class="card small invest-card">
+          <p>Total invest</p>
+          <b id="invest">0.00 USD</b>
+        </div>
+        <div class="card small current-invest-card">
+          <p>Current invest</p>
+          <b id="currentInvest">0.00 USD</b>
+        </div>
+      </div>
+    </div>
+
+    <!-- Loader -->
+    <div id="loading">
+      <div class="spinner"></div>
+      Refreshing...
+    </div>
+
+    <h3>More options</h3>
+    <div class="options-grid single-option">
+      <a href="log.html">
+        <img src="https://i.supaimg.com/428137b2-eb6d-4b4a-abce-f260ecaeafbe.png" alt="Options" class="options-img">
+      </a>
+    </div>
+
+    <div class="referral-section">
+      <h3>Your Referral Link</h3>
+      <div class="referral-box">
+        <input type="text" id="referralLink" readonly>
+        <button onclick="copyReferral()">Copy</button>
+      </div>
+    </div>
+
+    <button onclick="logout()" class="login-btn" style="margin-top:20px;">Logout</button>
+
+    <!-- Customer Service Section -->
+    <div class="support-section">
+      <p>Need help? Contact our customer service at:</p>
+      <a href="mailto:info.myharvestine@gmail.com">
+        info.myharvestine@gmail.com
+      </a>
+    </div>
+  </div>
+
+  <div class="bottom-nav">
+    <a href="deposit.html"><i class="fas fa-wallet"></i><br>Deposit</a>
+    <a href="invest.html"><i class="fas fa-piggy-bank"></i><br>My invest</a>
+    <a href="dashboard.html" class="active"><i class="fas fa-home"></i><br>Home</a>
+    <a href="withdraw.html"><i class="fas fa-money-bill"></i><br>Withdraw</a>
+    <a href="transfer.html"><i class="fas fa-exchange-alt"></i><br>Transfer</a>
+  </div>
+
+  <script>
+    async function loadDashboard() {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        window.location.href = "index.html";
+        return;
+      }
+
+      document.getElementById("loading").style.display = "block";
+
+      try {
+        const res = await fetch("https://harvestive-co-backend.onrender.com/user/dashboard", {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        const data = await res.json();
+
+        if (!res.ok) {
+          localStorage.removeItem("token");
+          window.location.href = "index.html";
+          return;
+        }
+
+        const user = data.user || {};
+        document.getElementById("welcomeText").innerText = "Welcome, " + (user.username || "User");
+        document.getElementById("balance").innerText = ((user.balance || 0).toFixed(2)) + " USD";
+
+        const deposits = data.deposits || [];
+        const totalDeposit = deposits.reduce(
+          (sum, d) => d.status === "approved" ? sum + d.amount : sum,
+          0
+        );
+        document.getElementById("deposit").innerText = totalDeposit.toFixed(2) + " USD";
+
+        const withdrawals = data.withdrawals || [];
+        const totalWithdraw = withdrawals.reduce(
+          (sum, w) => w.status === "approved" ? sum + w.amount : sum,
+          0
+        );
+        document.getElementById("withdraw").innerText = totalWithdraw.toFixed(2) + " USD";
+
+        const investments = data.investments || [];
+        const totalInvest = investments.reduce((sum, i) => sum + i.amount, 0);
+        const activeInvest = investments
+          .filter(i => i.status === "active")
+          .reduce((sum, i) => sum + i.amount, 0);
+
+        document.getElementById("invest").innerText = totalInvest.toFixed(2) + " USD";
+        document.getElementById("currentInvest").innerText = activeInvest.toFixed(2) + " USD";
+
+        document.getElementById("referralLink").value =
+          window.location.origin + "/register.html?ref=" + (user._id || "");
+      } catch (err) {
+        console.error(err);
+        alert("Error loading dashboard. Please login again.");
+        localStorage.removeItem("token");
+        window.location.href = "index.html";
+      }
+
+      document.getElementById("loading").style.display = "none";
+    }
+
+    function logout() {
+      localStorage.removeItem("token");
+      window.location.href = "index.html";
+    }
+
+    function copyReferral() {
+      const input = document.getElementById("referralLink");
+      navigator.clipboard.writeText(input.value).then(() => alert("Referral link copied!"));
+    }
+
+    window.onload = loadDashboard;
+  </script>
+</body>
+</html>

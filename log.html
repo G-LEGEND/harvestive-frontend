@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Transaction Logs</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <style>
+    .logs-container { padding: 20px; }
+    .tabs { display: flex; justify-content: space-around; margin-bottom: 20px; }
+    .tab-btn {
+      flex: 1;
+      padding: 10px;
+      cursor: pointer;
+      border: none;
+      background: #eee;
+      font-weight: bold;
+    }
+    .tab-btn.active { background: gold; color: #000; }
+    .log-list { list-style: none; padding: 0; }
+    .log-item {
+      border: 1px solid #ddd;
+      padding: 15px;
+      border-radius: 10px;
+      margin-bottom: 10px;
+      background: #fff;
+    }
+    .status-pending { color: orange; }
+    .status-approved { color: green; }
+    .status-rejected { color: red; }
+
+    /* Loading spinner */
+    .loading {
+      text-align: center;
+      padding: 20px;
+    }
+    .spinner {
+      border: 4px solid #f3f3f3;
+      border-top: 4px solid gold;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      margin: auto;
+      animation: spin 1s linear infinite;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body>
+  <div class="logs-container">
+    <h2>My Transaction Logs</h2>
+
+    <!-- Tabs -->
+    <div class="tabs">
+      <button class="tab-btn active" onclick="showTab('deposits')">Deposits</button>
+      <button class="tab-btn" onclick="showTab('withdrawals')">Withdrawals</button>
+      <button class="tab-btn" onclick="showTab('investments')">Investments</button>
+    </div>
+
+    <!-- Loading -->
+    <div id="loading" class="loading" style="display:none;">
+      <div class="spinner"></div>
+      <p>Loading...</p>
+    </div>
+
+    <!-- Deposit Logs -->
+    <ul id="deposits" class="log-list"></ul>
+
+    <!-- Withdraw Logs -->
+    <ul id="withdrawals" class="log-list" style="display:none;"></ul>
+
+    <!-- Investment Logs -->
+    <ul id="investments" class="log-list" style="display:none;"></ul>
+  </div>
+
+  <div class="bottom-nav">
+    <a href="deposit.html"><i class="fas fa-wallet"></i><br>Deposit</a>
+    <a href="invest.html"><i class="fas fa-piggy-bank"></i><br>My invest</a>
+    <a href="dashboard.html"><i class="fas fa-home"></i><br>Home</a>
+    <a href="withdraw.html"><i class="fas fa-money-bill"></i><br>Withdraw</a>
+    <a href="transfer.html"><i class="fas fa-exchange-alt"></i><br>Transfer</a>
+  </div>
+
+  <script>
+    function showTab(tab) {
+      document.querySelectorAll(".log-list").forEach(list => list.style.display = "none");
+      document.getElementById(tab).style.display = "block";
+      document.querySelectorAll(".tab-btn").forEach(btn => btn.classList.remove("active"));
+      event.target.classList.add("active");
+
+      // Refresh logs on tab switch
+      loadLogs();
+    }
+
+    async function loadLogs() {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        alert("You must be logged in.");
+        window.location.href = "index.html";
+        return;
+      }
+
+      const loading = document.getElementById("loading");
+      loading.style.display = "block";
+
+      try {
+        const res = await fetch("https://harvestive-co-backend.onrender.com/user/dashboard", {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        const data = await res.json();
+
+        // Deposits
+        const depositList = document.getElementById("deposits");
+        depositList.innerHTML = data.deposits.map(d => `
+          <li class="log-item">
+            <strong>Deposit:</strong> $${d.amount}<br>
+            <strong>Method:</strong> ${d.method}<br>
+            <strong>Status:</strong> <span class="status-${d.status}">${d.status}</span><br>
+            <small>${new Date(d.createdAt).toLocaleString()}</small>
+          </li>
+        `).join("");
+
+        // Withdrawals
+        const withdrawList = document.getElementById("withdrawals");
+        withdrawList.innerHTML = data.withdrawals.map(w => `
+          <li class="log-item">
+            <strong>Withdraw:</strong> $${w.amount}<br>
+            <strong>Method:</strong> ${w.method}<br>
+            <strong>Address:</strong> ${w.address}<br>
+            <strong>Status:</strong> <span class="status-${w.status}">${w.status}</span><br>
+            <small>${new Date(w.createdAt).toLocaleString()}</small>
+          </li>
+        `).join("");
+
+        // Investments
+        const investList = document.getElementById("investments");
+        investList.innerHTML = data.investments.map(i => `
+          <li class="log-item">
+            <strong>Invested:</strong> $${i.amount}<br>
+            <strong>Status:</strong> ${i.status || "active"}<br>
+            <small>${new Date(i.createdAt).toLocaleString()}</small>
+          </li>
+        `).join("");
+
+      } catch (err) {
+        console.error(err);
+        alert("⚠️ Error loading logs");
+      } finally {
+        loading.style.display = "none"; // hide spinner after load
+      }
+    }
+
+    // Load logs on page load
+    loadLogs();
+  </script>
+</body>
+</html>

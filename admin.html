@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Admin Dashboard</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <style>
+    :root { --bg:#f4f6f9; --card:#fff; --accent:#d4af37; --danger:#dc3545; --muted:#666; }
+    *{box-sizing:border-box}
+    body{
+      margin:0; font-family:system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial;
+      background:var(--bg); display:flex;align-items:flex-start;justify-content:center;padding:28px;
+    }
+    .wrap{width:100%;max-width:980px}
+    .card{
+      background:var(--card); border-radius:12px; padding:18px; box-shadow:0 8px 30px rgba(2,6,23,0.06);
+      margin-bottom:18px;
+    }
+    h1{margin:0 0 12px;font-size:20px}
+    .cols{display:flex;gap:16px;flex-wrap:wrap}
+    .col{flex:1;min-width:260px}
+    form{display:flex;flex-direction:column;gap:10px}
+    input[type="text"], input[type="password"], input[type="file"]{
+      padding:10px;border:1px solid #e6e6e6;border-radius:8px;font-size:14px;
+    }
+    button{
+      padding:10px 12px;border-radius:8px;border:0;background:var(--accent);color:#111;font-weight:700;cursor:pointer;
+    }
+    .btn-danger{background:var(--danger);color:white}
+    .muted{color:var(--muted);font-size:13px}
+    .hidden{display:none}
+    .method-list{display:flex;flex-direction:column;gap:10px}
+    .method-item{display:flex;align-items:center;justify-content:space-between;padding:10px;border:1px solid #eee;border-radius:8px;background:#fafafa}
+    .method-info{display:flex;align-items:center;gap:12px}
+    .qr-thumb{width:56px;height:56px;border-radius:6px;object-fit:cover;border:1px solid #ddd}
+    .small{font-size:13px;color:#444}
+    .top-row{display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+    .logout{background:#333;color:#fff;padding:8px 10px;border-radius:8px;font-weight:600;cursor:pointer}
+    .note{font-size:13px;color:#333}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <div class="top-row">
+        <div>
+          <h1>Admin Panel</h1>
+          <div class="muted">Login with admin password to manage deposit methods</div>
+        </div>
+        <div id="adminControls" class="muted"></div>
+      </div>
+    </div>
+
+    <!-- Login card -->
+    <div id="loginCard" class="card">
+      <form id="loginForm">
+        <label class="small">Admin password</label>
+        <input id="adminPassword" type="password" placeholder="Enter admin password" required />
+        <div style="display:flex;gap:8px;">
+          <button type="submit">Login</button>
+          <button type="button" id="demoBtn" style="background:#eee;color:#222">Demo: autofill</button>
+        </div>
+        <div class="muted small">password : <code></code></div>
+      </form>
+    </div>
+
+    <!-- Add method & list -->
+    <div id="manageArea" class="card hidden">
+      <div style="display:flex;gap:16px;align-items:center;justify-content:space-between">
+        <h2 style="margin:0">Deposit Methods</h2>
+        <div style="display:flex;gap:10px;">
+          <button onclick="location.href='admin-approve.html'" style="background:var(--accent);color:#111;padding:8px 12px;border-radius:8px;font-weight:700;cursor:pointer">
+            Payment Approved
+          </button>
+          <button id="logoutBtn" class="logout">Logout</button>
+        </div>
+      </div>
+
+      <div style="margin-top:12px;display:flex;gap:16px;flex-wrap:wrap">
+        <div style="flex:1;min-width:260px">
+          <form id="addMethodForm" enctype="multipart/form-data">
+            <label class="small">Method name (BTC, USDT, PayPal...)</label>
+            <input name="name" type="text" placeholder="BTC" required />
+
+            <label class="small">Payment address</label>
+            <input name="address" type="text" placeholder="Wallet address or email" required />
+
+            <label class="small">QR image (png/jpg)</label>
+            <input name="qr" type="file" accept="image/*" required />
+
+            <div style="display:flex;gap:8px;margin-top:8px">
+              <button type="submit">Add Method</button>
+              <button type="button" id="refreshBtn" style="background:#eee;color:#222">Refresh</button>
+            </div>
+          </form>
+        </div>
+
+        <div style="flex:1;min-width:320px">
+          <div style="margin-bottom:8px" class="note">Current methods (visible to users)</div>
+          <div id="methodList" class="method-list"></div>
+        </div>
+      </div>
+    </div>
+
+    <div id="logCard" class="card hidden">
+      <h2 style="margin-top:0">Admin actions log</h2>
+      <div id="logOutput" class="muted small">No actions yet</div>
+    </div>
+  </div>
+
+  <script>
+    // API base — if page opened via file:// fallback to localhost
+    const API_BASE = (function(){
+      try {
+        if (location.protocol === 'file:') return 'https://harvestive-co-backend.onrender.com';
+        return location.origin;
+      } catch (e) {
+        return 'https://harvestive-co-backend.onrender.com';
+      }
+    })();
+
+    const loginForm = document.getElementById('loginForm');
+    const adminPassword = document.getElementById('adminPassword');
+    const demoBtn = document.getElementById('demoBtn');
+    const loginCard = document.getElementById('loginCard');
+    const manageArea = document.getElementById('manageArea');
+    const addMethodForm = document.getElementById('addMethodForm');
+    const methodList = document.getElementById('methodList');
+    const refreshBtn = document.getElementById('refreshBtn');
+    const logoutBtn = document.getElementById('logoutBtn');
+    const logOutput = document.getElementById('logOutput');
+    const adminControls = document.getElementById('adminControls');
+
+    function appendLog(msg){
+      const now = new Date().toLocaleString();
+      logOutput.innerText = `[${now}] ${msg}\n` + (logOutput.innerText === "No actions yet" ? "" : logOutput.innerText);
+    }
+
+    // --- helper: parse JSON safely, fallback to text ---
+    async function safeParse(res){
+      const text = await res.text();
+      let json = null;
+      try { json = JSON.parse(text); } catch (e) { /* not JSON */ }
+      return { ok: res.ok, status: res.status, json, text };
+    }
+
+    // --- login ---
+    loginForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const password = adminPassword.value.trim();
+      if (!password) return alert('Enter admin password');
+
+      try {
+        const res = await fetch(`${API_BASE}/admin/login`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ password }),
+        });
+        const parsed = await safeParse(res);
+        if (!parsed.ok) {
+          const msg = parsed.json?.error || parsed.text || `Status ${parsed.status}`;
+          throw new Error(msg);
+        }
+        const token = parsed.json?.token;
+        if (!token) throw new Error('No token in response');
+        localStorage.setItem('adminToken', token);
+        appendLog('Admin logged in');
+        showManageUI();
+      } catch (err) {
+        console.error(err);
+        alert('Login error: ' + (err.message || err));
+      }
+    });
+
+    demoBtn.addEventListener('click', () => {
+      adminPassword.value = 'sholashola';
+    });
+
+    function showManageUI(){
+      loginCard.classList.add('hidden');
+      manageArea.classList.remove('hidden');
+      document.getElementById('logCard').classList.remove('hidden');
+      adminControls.innerHTML = `<span class="small">Logged as admin</span>`;
+      loadMethods();
+    }
+
+    function hideManageUI(){
+      loginCard.classList.remove('hidden');
+      manageArea.classList.add('hidden');
+      document.getElementById('logCard').classList.add('hidden');
+      adminControls.innerHTML = '';
+      appendLog('Logged out');
+    }
+
+    // If token present (page reload), show UI
+    if (localStorage.getItem('adminToken')) showManageUI();
+
+    logoutBtn.addEventListener('click', () => {
+      localStorage.removeItem('adminToken');
+      hideManageUI();
+    });
+
+    // --- add method ---
+    addMethodForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const token = localStorage.getItem('adminToken');
+      if (!token) { alert('Please login first'); return; }
+
+      const formData = new FormData(addMethodForm);
+      try {
+        const res = await fetch(`${API_BASE}/admin/deposit-methods`, {
+          method: 'POST',
+          headers: { Authorization: `Bearer ${token}` },
+          body: formData
+        });
+        const parsed = await safeParse(res);
+        if (!parsed.ok) {
+          const msg = parsed.json?.error || parsed.text || `Status ${parsed.status}`;
+          throw new Error(msg);
+        }
+        appendLog('Added method: ' + (parsed.json?.id || 'unknown id'));
+        alert('Method added');
+        addMethodForm.reset();
+        loadMethods();
+      } catch (err) {
+        console.error(err);
+        alert('Error adding method: ' + (err.message || err));
+      }
+    });
+
+    // --- load methods ---
+    async function loadMethods(){
+      methodList.innerHTML = 'Loading...';
+      try {
+        const res = await fetch(`${API_BASE}/user/deposit-methods`);
+        const parsed = await safeParse(res);
+        if (!parsed.ok) {
+          const msg = parsed.json?.error || parsed.text || `Status ${parsed.status}`;
+          throw new Error(msg);
+        }
+        const data = parsed.json || [];
+        methodList.innerHTML = '';
+        if (!data.length) {
+          methodList.innerHTML = '<div class="muted small">No methods</div>';
+          return;
+        }
+        data.forEach(m => {
+          const div = document.createElement('div');
+          div.className = 'method-item';
+          div.innerHTML = `
+            <div class="method-info">
+              <img src="${m.qr || ''}" class="qr-thumb" alt="QR" onerror="this.style.display='none'">
+              <div>
+                <div><strong>${m.name}</strong></div>
+                <div class="small">${m.address || ''}</div>
+              </div>
+            </div>
+            <div style="display:flex;gap:8px;align-items:center">
+              <button class="btn-danger" onclick="deleteMethod('${m._id}')">Delete</button>
+            </div>
+          `;
+          methodList.appendChild(div);
+        });
+      } catch (err) {
+        console.error(err);
+        methodList.innerHTML = '<div class="muted small">Error loading methods</div>';
+        alert('Error loading methods: ' + (err.message || err));
+      }
+    }
+
+    refreshBtn.addEventListener('click', loadMethods);
+
+    // --- delete method ---
+    async function deleteMethod(id){
+      if (!confirm('Delete this method?')) return;
+      const token = localStorage.getItem('adminToken');
+      if (!token) { alert('Login first'); return; }
+
+      try {
+        const res = await fetch(`${API_BASE}/admin/deposit-methods/${id}`, {
+          method: 'DELETE',
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        const parsed = await safeParse(res);
+        if (!parsed.ok) {
+          const msg = parsed.json?.error || parsed.text || `Status ${parsed.status}`;
+          throw new Error(msg);
+        }
+        appendLog('Deleted method ' + id);
+        alert('Deleted');
+        loadMethods();
+      } catch (err) {
+        console.error(err);
+        alert('Error deleting method: ' + (err.message || err));
+      }
+    }
+
+    // prevent accidental global functions with same names
+    window.deleteMethod = deleteMethod;
+    window.loadMethods = loadMethods;
+  </script>
+</body>
+</html>

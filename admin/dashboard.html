@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Admin Panel</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    body { font-family: Arial, sans-serif; background: #f9f9f9; margin: 0; padding: 20px; }
+    h2 { text-align: center; margin-bottom: 20px; }
+    .login-box, .admin-panel {
+      max-width: 500px;
+      margin: 50px auto;
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 3px 6px rgba(0,0,0,0.1);
+    }
+    input, button {
+      width: 100%; padding: 10px; margin: 10px 0;
+      border: 1px solid #ddd; border-radius: 6px;
+    }
+    button { background: gold; border: none; font-weight: bold; cursor: pointer; }
+    button:hover { background: #d4af37; }
+    .method-card, .withdraw-card {
+      background: #fff; border: 1px solid #ddd;
+      margin-bottom: 15px; padding: 15px; border-radius: 8px;
+    }
+    img { max-width: 100px; border-radius: 6px; }
+    .actions button { margin-right: 10px; }
+  </style>
+</head>
+<body>
+
+  <div class="login-box" id="loginBox">
+    <h2>Admin Login</h2>
+    <input type="password" id="adminPassword" placeholder="Enter password">
+    <button onclick="adminLogin()">Login</button>
+  </div>
+
+  <div class="admin-panel" id="adminPanel" style="display:none;">
+    <h2>⚙️ Admin Dashboard</h2>
+
+    <!-- Add Withdrawal Method -->
+    <h3>Add Withdrawal Method</h3>
+    <input type="text" id="methodName" placeholder="Method Name (e.g. BTC)">
+    <input type="text" id="methodAddress" placeholder="Wallet Address / Email">
+    <input type="file" id="methodQR" accept="image/*">
+    <button onclick="addMethod()">Add Method</button>
+
+    <h3>Existing Methods</h3>
+    <div id="methodsList"></div>
+
+    <h3>Pending Withdrawals</h3>
+    <div id="withdrawRequests"></div>
+  </div>
+
+  <script>
+    const ADMIN_PASS = "sholashola";
+
+    function adminLogin() {
+      const pass = document.getElementById("adminPassword").value;
+      if (pass === ADMIN_PASS) {
+        localStorage.setItem("isAdmin", "true");
+        document.getElementById("loginBox").style.display = "none";
+        document.getElementById("adminPanel").style.display = "block";
+        loadMethods();
+        loadWithdrawals();
+      } else {
+        alert("❌ Wrong password");
+      }
+    }
+
+    async function addMethod() {
+      const name = document.getElementById("methodName").value;
+      const address = document.getElementById("methodAddress").value;
+      const qr = document.getElementById("methodQR").files[0];
+
+      if (!name || !address || !qr) return alert("Fill all fields");
+
+      const formData = new FormData();
+      formData.append("name", name);
+      formData.append("address", address);
+      formData.append("qr", qr);
+
+      try {
+        const res = await fetch("https://harvestive-co-backend.onrender.com/admin/add-method", {
+          method: "POST",
+          body: formData
+        });
+        const data = await res.json();
+        if (res.ok) {
+          alert("✅ Method added");
+          loadMethods();
+        } else {
+          alert(data.message || "Failed to add method");
+        }
+      } catch (err) {
+        console.error(err);
+        alert("Server error");
+      }
+    }
+
+    async function loadMethods() {
+      try {
+        const res = await fetch("https://harvestive-co-backend.onrender.com/admin/methods");
+        const data = await res.json();
+        if (!res.ok) return alert("Error loading methods");
+
+        const container = document.getElementById("methodsList");
+        container.innerHTML = "";
+        data.forEach(m => {
+          const div = document.createElement("div");
+          div.className = "method-card";
+          div.innerHTML = `<b>${m.name}</b><br>${m.address}<br>
+                           <img src="data:image/png;base64,${m.qr}" alt="QR">`;
+          container.appendChild(div);
+        });
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    async function loadWithdrawals() {
+      try {
+        const res = await fetch("https://harvestive-co-backend.onrender.com/admin/withdrawals");
+        const data = await res.json();
+        if (!res.ok) return alert("Error loading withdrawals");
+
+        const container = document.getElementById("withdrawRequests");
+        container.innerHTML = "";
+        data.forEach(w => {
+          const div = document.createElement("div");
+          div.className = "withdraw-card";
+          div.innerHTML = `
+            <p><b>User:</b> ${w.userId}</p>
+            <p><b>Amount:</b> ${w.amount} USD</p>
+            <p><b>Method:</b> ${w.method}</p>
+            <p><b>Status:</b> ${w.status}</p>
+            <img src="data:image/png;base64,${w.screenshot}" alt="Receipt">
+            <div class="actions">
+              <button onclick="approveWithdraw('${w._id}')">Approve</button>
+              <button onclick="rejectWithdraw('${w._id}')">Reject</button>
+            </div>
+          `;
+          container.appendChild(div);
+        });
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    async function approveWithdraw(id) {
+      try {
+        const res = await fetch(`https://harvestive-co-backend.onrender.com/admin/withdraw/${id}/approve`, { method: "POST" });
+        const data = await res.json();
+        if (res.ok) {
+          alert("✅ Withdrawal approved");
+          loadWithdrawals();
+        } else {
+          alert(data.message || "Failed to approve");
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    async function rejectWithdraw(id) {
+      try {
+        const res = await fetch(`https://harvestive-co-backend.onrender.com/admin/withdraw/${id}/reject`, { method: "POST" });
+        const data = await res.json();
+        if (res.ok) {
+          alert("❌ Withdrawal rejected");
+          loadWithdrawals();
+        } else {
+          alert(data.message || "Failed to reject");
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    window.onload = function () {
+      if (localStorage.getItem("isAdmin") === "true") {
+        document.getElementById("loginBox").style.display = "none";
+        document.getElementById("adminPanel").style.display = "block";
+        loadMethods();
+        loadWithdrawals();
+      }
+    };
+  </script>
+</body>
+</html>

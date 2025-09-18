@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>My Invest (Mobile)</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    :root {
+      --bg: #f2f2f2;
+      --card: #fff;
+      --accent-start: gold;
+      --accent-end: #d4af37;
+      --max-width: 480px;
+    }
+
+    html, body {
+      margin: 0;
+      font-family: 'Arial', sans-serif;
+      background-color: var(--bg);
+      height: 100%;
+    }
+
+    .page {
+      padding: 16px;
+      max-width: var(--max-width);
+      margin: auto;
+    }
+
+    h2 {
+      text-align: center;
+      margin: 10px 0 18px;
+      font-size: 20px;
+    }
+
+    #plansContainer {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .plan-card {
+      background: var(--card);
+      border-radius: 10px;
+      padding: 14px;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.06);
+    }
+
+    .plan-header {
+      background: linear-gradient(to right, var(--accent-start), var(--accent-end));
+      color: #111;
+      text-align: center;
+      padding: 14px;
+      font-weight: 700;
+      font-size: 16px;
+      border-radius: 8px;
+      margin: -14px -14px 12px -14px;
+    }
+
+    .plan-body ul {
+      list-style: none;
+      padding: 0;
+      margin: 0 0 12px;
+    }
+
+    .plan-body li {
+      margin-bottom: 8px;
+      font-size: 14px;
+      color: #222;
+    }
+
+    .checkmark {
+      color: var(--accent-end);
+      margin-right: 6px;
+      font-weight: 700;
+    }
+
+    .affiliate {
+      text-align: center;
+      margin: 12px 0;
+    }
+
+    .affiliate-levels {
+      display: flex;
+      gap: 8px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .level {
+      border: 1px solid var(--accent-end);
+      border-radius: 50%;
+      padding: 10px;
+      width: 56px;
+      height: 56px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+    }
+
+    .invest-btn {
+      background: linear-gradient(to right, var(--accent-start), var(--accent-end));
+      border: none;
+      border-radius: 8px;
+      width: 100%;
+      padding: 12px;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+      color: #111;
+    }
+
+    /* Modal */
+    #investModal {
+      display: none;
+      position: fixed;
+      z-index: 9999;
+      inset: 0;
+      background: rgba(0,0,0,0.5);
+      justify-content: center;
+      align-items: center;
+      padding: 16px;
+    }
+
+    #investModal .modal-content {
+      background: #fff;
+      width: 100%;
+      max-width: 420px;
+      border-radius: 10px;
+      padding: 16px;
+      box-shadow: 0 6px 22px rgba(0,0,0,0.15);
+    }
+
+    #investModal input {
+      width: 100%;
+      padding: 12px;
+      margin: 10px 0;
+      border-radius: 8px;
+      border: 1px solid #ddd;
+      font-size: 16px;
+    }
+
+    #investModal .row {
+      display:flex;
+      gap:8px;
+    }
+
+    #investModal .btn {
+      padding: 12px;
+      border-radius: 8px;
+      font-weight: 700;
+      cursor: pointer;
+      border: none;
+      flex: 1;
+    }
+
+    #investModal .btn.primary {
+      background: linear-gradient(to right, var(--accent-start), var(--accent-end));
+      color: #111;
+    }
+
+    #investModal .btn.ghost {
+      background: #f0f0f0;
+      color: #111;
+    }
+
+    .notice { font-size: 13px; color: #555; margin-bottom: 8px; }
+    .muted { color: #666; font-size: 13px; }
+
+    /* small responsive tweak */
+    @media (min-width: 481px) {
+      .page { padding: 18px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <h2>📈 Investment Plans</h2>
+    <div id="plansContainer" aria-live="polite"></div>
+  </div>
+
+  <!-- Modal -->
+  <div id="investModal" role="dialog" aria-modal="true" aria-labelledby="modalPlanName">
+    <div class="modal-content" id="modalContent">
+      <h3 id="modalPlanName">Invest in Plan</h3>
+      <p class="notice">Enter amount and confirm. Minimum and maximum enforced per plan.</p>
+
+      <label for="investAmount" class="muted">Amount (USD)</label>
+      <input id="investAmount" type="number" min="0" step="any" inputmode="decimal" placeholder="e.g. 5000" />
+
+      <div class="row" style="margin-top:8px;">
+        <button class="btn ghost" onclick="closeInvestModal()" type="button">Cancel</button>
+        <button id="confirmBtn" class="btn primary" onclick="confirmInvestment()" type="button">Confirm</button>
+      </div>
+
+      <p id="modalMsg" class="muted" style="margin-top:8px"></p>
+    </div>
+  </div>
+
+  <script>
+    // static plans (same as before)
+    const plans = [
+      { name: 'STANDARD PLAN', rate: '3.50%', min: 100, max: 9999, times: 5, capitalBack: 'Yes', levels: [8,12,16,20,30] },
+      { name: 'PREMIUM PLAN', rate: '4.50%', min: 5000, max: 24000, times: 5, capitalBack: 'Yes', levels: [8,12,16,20,30] },
+      { name: 'INVESTORS PLAN', rate: '7.50%', min: 25000, max: 39999, times: 5, capitalBack: 'Yes', levels: [8,12,16,20,30] },
+      { name: 'CONFIDENT PLAN', rate: '12.00%', min: 40000, max: 1000000, times: 5, capitalBack: 'Yes', levels: [8,12,16,20,30] },
+    ];
+
+    let selectedPlan = null;
+
+    // Correct API base: use local backend while developing on localhost, otherwise your Render URL.
+    const API_BASE = window.location.hostname.includes('localhost')
+      ? 'http://localhost:3000'
+      : 'https://harvestive-co-backend.onrender.com';
+
+    function renderPlans() {
+      const container = document.getElementById('plansContainer');
+      container.innerHTML = "";
+      plans.forEach((plan, index) => {
+        const card = document.createElement('div');
+        card.className = 'plan-card';
+        card.innerHTML = `
+          <div class="plan-header">${plan.name}<br><span style="font-size:18px">${plan.rate} <small>% Day</small></span></div>
+          <div class="plan-body">
+            <ul>
+              <li><span class="checkmark">✔️</span> Minimum: <strong>${plan.min.toFixed(2)} USD</strong></li>
+              <li><span class="checkmark">✔️</span> Maximum: <strong>${plan.max.toLocaleString()} USD</strong></li>
+              <li><span class="checkmark">✔️</span> For: <strong>${plan.times} Times</strong></li>
+              <li><span class="checkmark">✔️</span> Capital back: <strong>${plan.capitalBack}</strong></li>
+            </ul>
+
+            <div class="affiliate">
+              <strong>Affiliate bonus</strong>
+              <div class="affiliate-levels">
+                ${plan.levels.map((level,i)=>`<div class="level">${level}%<br><small>lvl ${i+1}</small></div>`).join('')}
+              </div>
+            </div>
+
+            <button class="invest-btn" onclick="openInvestModal(${index})">Invest now</button>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    function openInvestModal(index) {
+      selectedPlan = plans[index];
+      document.getElementById('modalPlanName').innerText = `Invest in ${selectedPlan.name}`;
+      document.getElementById('investAmount').value = "";
+      document.getElementById('modalMsg').innerText = "";
+      document.getElementById('confirmBtn').disabled = false;
+      document.getElementById('confirmBtn').innerText = "Confirm";
+      document.getElementById('investModal').style.display = "flex";
+      // focus input for keyboard users
+      setTimeout(()=> document.getElementById('investAmount').focus(), 100);
+    }
+
+    function closeInvestModal() {
+      document.getElementById('investModal').style.display = "none";
+      selectedPlan = null;
+    }
+
+    // Close modal when clicking outside content or pressing Escape
+    document.getElementById('investModal').addEventListener('click', (e) => {
+      if (e.target === document.getElementById('investModal')) closeInvestModal();
+    });
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') closeInvestModal();
+    });
+
+    // Safe parser for responses — supports JSON and non-JSON (HTML) error pages
+    async function parseResponse(res) {
+      const raw = await res.text();
+      try {
+        const json = JSON.parse(raw);
+        return { ok: res.ok, status: res.status, data: json, rawText: raw };
+      } catch {
+        return { ok: res.ok, status: res.status, data: null, rawText: raw };
+      }
+    }
+
+    async function confirmInvestment() {
+      const amountRaw = document.getElementById('investAmount').value;
+      const amount = parseFloat(amountRaw);
+      const modalMsg = document.getElementById('modalMsg');
+      const confirmBtn = document.getElementById('confirmBtn');
+
+      modalMsg.innerText = "";
+
+      if (!selectedPlan) {
+        modalMsg.innerText = "No plan selected.";
+        return;
+      }
+      if (!amountRaw || isNaN(amount)) {
+        modalMsg.innerText = "Enter a valid amount.";
+        return;
+      }
+      if (amount < selectedPlan.min || amount > selectedPlan.max) {
+        modalMsg.innerText = `Amount must be between ${selectedPlan.min} and ${selectedPlan.max} USD`;
+        return;
+      }
+
+      const token = localStorage.getItem('token');
+      if (!token) {
+        alert('You must be logged in.');
+        window.location.href = "index.html";
+        return;
+      }
+
+      confirmBtn.disabled = true;
+      confirmBtn.innerText = "Processing...";
+
+      try {
+        const res = await fetch(API_BASE + '/invest', {
+          method: 'POST',
+          headers: {
+            'Authorization': 'Bearer ' + token,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ amount, plan: selectedPlan.name })
+        });
+
+        const parsed = await parseResponse(res);
+
+        if (!parsed.ok) {
+          // Prefer server JSON error, otherwise show snippet of raw HTML/text
+          if (parsed.data && (parsed.data.error || parsed.data.message)) {
+            throw new Error(parsed.data.error || parsed.data.message);
+          } else {
+            const snippet = (parsed.rawText || '').slice(0, 300).replace(/\n/g, ' ');
+            throw new Error('Server returned non-JSON response. See console for details:\n' + snippet);
+          }
+        }
+
+        // Success - parsed.data should be JSON
+        const successMsg = (parsed.data && (parsed.data.message || parsed.data.success)) || 'Investment started successfully!';
+        alert(successMsg);
+        closeInvestModal();
+        // Redirect to dashboard to show updated balance
+        window.location.href = "dashboard.html";
+      } catch (err) {
+        console.error('Invest error:', err);
+        modalMsg.innerText = err.message || 'Error processing investment';
+      } finally {
+        confirmBtn.disabled = false;
+        confirmBtn.innerText = "Confirm";
+      }
+    }
+
+    // Initial render
+    renderPlans();
+  </script>
+</body>
+</html>
