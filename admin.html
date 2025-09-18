@@ -64,7 +64,7 @@
       </form>
     </div>
 
-    <!-- Add method & list -->
+    <!-- Manage area -->
     <div id="manageArea" class="card hidden">
       <div style="display:flex;gap:16px;align-items:center;justify-content:space-between">
         <h2 style="margin:0">Deposit Methods</h2>
@@ -102,6 +102,7 @@
       </div>
     </div>
 
+    <!-- Log area -->
     <div id="logCard" class="card hidden">
       <h2 style="margin-top:0">Admin actions log</h2>
       <div id="logOutput" class="muted small">No actions yet</div>
@@ -109,15 +110,8 @@
   </div>
 
   <script>
-    // API base — if page opened via file:// fallback to localhost
-    const API_BASE = (function(){
-      try {
-        if (location.protocol === 'file:') return 'https://harvestive-co-backend.onrender.com';
-        return location.origin;
-      } catch (e) {
-        return 'https://harvestive-co-backend.onrender.com';
-      }
-    })();
+    // Always use backend API on Render
+    const API_BASE = 'https://harvestive-co-backend.onrender.com';
 
     const loginForm = document.getElementById('loginForm');
     const adminPassword = document.getElementById('adminPassword');
@@ -136,11 +130,10 @@
       logOutput.innerText = `[${now}] ${msg}\n` + (logOutput.innerText === "No actions yet" ? "" : logOutput.innerText);
     }
 
-    // --- helper: parse JSON safely, fallback to text ---
     async function safeParse(res){
       const text = await res.text();
       let json = null;
-      try { json = JSON.parse(text); } catch (e) { /* not JSON */ }
+      try { json = JSON.parse(text); } catch {}
       return { ok: res.ok, status: res.status, json, text };
     }
 
@@ -157,10 +150,7 @@
           body: JSON.stringify({ password }),
         });
         const parsed = await safeParse(res);
-        if (!parsed.ok) {
-          const msg = parsed.json?.error || parsed.text || `Status ${parsed.status}`;
-          throw new Error(msg);
-        }
+        if (!parsed.ok) throw new Error(parsed.json?.error || parsed.text || `Status ${parsed.status}`);
         const token = parsed.json?.token;
         if (!token) throw new Error('No token in response');
         localStorage.setItem('adminToken', token);
@@ -192,7 +182,6 @@
       appendLog('Logged out');
     }
 
-    // If token present (page reload), show UI
     if (localStorage.getItem('adminToken')) showManageUI();
 
     logoutBtn.addEventListener('click', () => {
@@ -204,7 +193,7 @@
     addMethodForm.addEventListener('submit', async (e) => {
       e.preventDefault();
       const token = localStorage.getItem('adminToken');
-      if (!token) { alert('Please login first'); return; }
+      if (!token) return alert('Please login first');
 
       const formData = new FormData(addMethodForm);
       try {
@@ -214,10 +203,7 @@
           body: formData
         });
         const parsed = await safeParse(res);
-        if (!parsed.ok) {
-          const msg = parsed.json?.error || parsed.text || `Status ${parsed.status}`;
-          throw new Error(msg);
-        }
+        if (!parsed.ok) throw new Error(parsed.json?.error || parsed.text || `Status ${parsed.status}`);
         appendLog('Added method: ' + (parsed.json?.id || 'unknown id'));
         alert('Method added');
         addMethodForm.reset();
@@ -234,10 +220,7 @@
       try {
         const res = await fetch(`${API_BASE}/user/deposit-methods`);
         const parsed = await safeParse(res);
-        if (!parsed.ok) {
-          const msg = parsed.json?.error || parsed.text || `Status ${parsed.status}`;
-          throw new Error(msg);
-        }
+        if (!parsed.ok) throw new Error(parsed.json?.error || parsed.text || `Status ${parsed.status}`);
         const data = parsed.json || [];
         methodList.innerHTML = '';
         if (!data.length) {
@@ -264,7 +247,6 @@
       } catch (err) {
         console.error(err);
         methodList.innerHTML = '<div class="muted small">Error loading methods</div>';
-        alert('Error loading methods: ' + (err.message || err));
       }
     }
 
@@ -274,7 +256,7 @@
     async function deleteMethod(id){
       if (!confirm('Delete this method?')) return;
       const token = localStorage.getItem('adminToken');
-      if (!token) { alert('Login first'); return; }
+      if (!token) return alert('Login first');
 
       try {
         const res = await fetch(`${API_BASE}/admin/deposit-methods/${id}`, {
@@ -282,10 +264,7 @@
           headers: { Authorization: `Bearer ${token}` }
         });
         const parsed = await safeParse(res);
-        if (!parsed.ok) {
-          const msg = parsed.json?.error || parsed.text || `Status ${parsed.status}`;
-          throw new Error(msg);
-        }
+        if (!parsed.ok) throw new Error(parsed.json?.error || parsed.text || `Status ${parsed.status}`);
         appendLog('Deleted method ' + id);
         alert('Deleted');
         loadMethods();
@@ -295,7 +274,6 @@
       }
     }
 
-    // prevent accidental global functions with same names
     window.deleteMethod = deleteMethod;
     window.loadMethods = loadMethods;
   </script>
