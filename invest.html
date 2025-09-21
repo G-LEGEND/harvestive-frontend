@@ -1,6 +1,211 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>My Invest (Mobile)</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    :root {
+      --bg: #f2f2f2;
+      --card: #fff;
+      --accent-start: gold;
+      --accent-end: #d4af37;
+      --max-width: 480px;
+    }
+
+    html, body {
+      margin: 0;
+      font-family: 'Arial', sans-serif;
+      background-color: var(--bg);
+      height: 100%;
+    }
+
+    .page {
+      padding: 16px;
+      max-width: var(--max-width);
+      margin: auto;
+      position: relative; /* needed for back button positioning */
+    }
+
+    h2 {
+      text-align: center;
+      margin: 10px 0 18px;
+      font-size: 20px;
+    }
+
+    /* Back button */
+    .back-btn {
+      position: absolute;
+      top: 12px;
+      right: 16px;
+      background: linear-gradient(to right, var(--accent-start), var(--accent-end));
+      border: none;
+      border-radius: 6px;
+      padding: 8px 14px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      color: #111;
+      box-shadow: 0 3px 8px rgba(0,0,0,0.1);
+    }
+
+    #plansContainer {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .plan-card {
+      background: var(--card);
+      border-radius: 10px;
+      padding: 14px;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.06);
+    }
+
+    .plan-header {
+      background: linear-gradient(to right, var(--accent-start), var(--accent-end));
+      color: #111;
+      text-align: center;
+      padding: 14px;
+      font-weight: 700;
+      font-size: 16px;
+      border-radius: 8px;
+      margin: -14px -14px 12px -14px;
+    }
+
+    .plan-body ul {
+      list-style: none;
+      padding: 0;
+      margin: 0 0 12px;
+    }
+
+    .plan-body li {
+      margin-bottom: 8px;
+      font-size: 14px;
+      color: #222;
+    }
+
+    .checkmark {
+      color: var(--accent-end);
+      margin-right: 6px;
+      font-weight: 700;
+    }
+
+    .affiliate {
+      text-align: center;
+      margin: 12px 0;
+    }
+
+    .affiliate-levels {
+      display: flex;
+      gap: 8px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .level {
+      border: 1px solid var(--accent-end);
+      border-radius: 50%;
+      padding: 10px;
+      width: 56px;
+      height: 56px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+    }
+
+    .invest-btn {
+      background: linear-gradient(to right, var(--accent-start), var(--accent-end));
+      border: none;
+      border-radius: 8px;
+      width: 100%;
+      padding: 12px;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+      color: #111;
+    }
+
+    /* Modal */
+    #investModal {
+      display: none;
+      position: fixed;
+      z-index: 9999;
+      inset: 0;
+      background: rgba(0,0,0,0.5);
+      justify-content: center;
+      align-items: center;
+      padding: 16px;
+    }
+
+    #investModal .modal-content {
+      background: #fff;
+      width: 100%;
+      max-width: 420px;
+      border-radius: 10px;
+      padding: 16px;
+      box-shadow: 0 6px 22px rgba(0,0,0,0.15);
+    }
+
+    #investModal input {
+      width: 100%;
+      padding: 12px;
+      margin: 10px 0;
+      border-radius: 8px;
+      border: 1px solid #ddd;
+      font-size: 16px;
+    }
+
+    #investModal .row {
+      display:flex;
+      gap:8px;
+    }
+
+    #investModal .btn {
+      padding: 12px;
+      border-radius: 8px;
+      font-weight: 700;
+      cursor: pointer;
+      border: none;
+      flex: 1;
+    }
+
+    #investModal .btn.primary {
+      background: linear-gradient(to right, var(--accent-start), var(--accent-end));
+      color: #111;
+    }
+
+    #investModal .btn.ghost {
+      background: #f0f0f0;
+      color: #111;
+    }
+
+    .notice { font-size: 13px; color: #555; margin-bottom: 8px; }
+    .muted { color: #666; font-size: 13px; }
+
+    /* small responsive tweak */
+    @media (min-width: 481px) {
+      .page { padding: 18px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <button class="back-btn" onclick="window.location.href='dashboard.html'">⬅ Back</button>
+    <h2>📈 Investment Plans</h2>
+    <div id="plansContainer" aria-live="polite"></div>
+  </div>
+
+  <!-- Modal (unchanged) -->
+  ...
+</body>
+</html>
   <meta charset="UTF-8" />
   <title>My Invest (Mobile)</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -202,7 +407,7 @@
   <script>
     // static plans (same as before)
     const plans = [
-      { name: 'STANDARD PLAN', rate: '3.50%', min: 100, max: 9999, times: 5, capitalBack: 'Yes', levels: [8,12,16,20,30] },
+      
       { name: 'PREMIUM PLAN', rate: '4.50%', min: 5000, max: 24000, times: 5, capitalBack: 'Yes', levels: [8,12,16,20,30] },
       { name: 'INVESTORS PLAN', rate: '7.50%', min: 25000, max: 39999, times: 5, capitalBack: 'Yes', levels: [8,12,16,20,30] },
       { name: 'CONFIDENT PLAN', rate: '12.00%', min: 40000, max: 1000000, times: 5, capitalBack: 'Yes', levels: [8,12,16,20,30] },

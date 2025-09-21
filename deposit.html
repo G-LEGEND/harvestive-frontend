@@ -169,7 +169,7 @@
     <form id="depositForm">
       <label>Amount (USD)</label>
       <input type="number" id="depositAmount" required placeholder="Enter amount">
-      <div class="note">Minimum deposit is 5000 USD</div>
+      <div class="note">Minimum deposit is 100 USD</div>
 
       <label>Select Method</label>
       <select id="depositMethod" required onchange="updateMethodDetails()">
@@ -281,9 +281,9 @@
         return;
       }
 
-      // ✅ enforce minimum 5000
-      if (amount < 5000) {
-        alert("Minimum deposit is 5000 USD");
+      // ✅ enforce minimum 100
+      if (amount < 100) {
+        alert("Minimum deposit is 100 USD");
         return;
       }
 
