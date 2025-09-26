@@ -72,6 +72,86 @@
           <button onclick="location.href='admin-approve.html'" style="background:var(--accent);color:#111;padding:8px 12px;border-radius:8px;font-weight:700;cursor:pointer">
             Payment Approved
           </button>
+          <!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Customer Service Button</title>
+<style>
+  .btn-cs {
+    --bg: #0b8cff;
+    --bg-dark: #0666c9;
+    --fg: #ffffff;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 6px 10px;
+    font-size: 13px;
+    font-weight: 600;
+    line-height: 1;
+    color: var(--fg);
+    background: linear-gradient(180deg,var(--bg) 0%,var(--bg-dark) 100%);
+    border: none;
+    border-radius: 10px;
+    box-shadow: 0 6px 18px rgba(11,140,255,0.18), 0 1px 0 rgba(255,255,255,0.06) inset;
+    cursor: pointer;
+    text-decoration: none;
+    transform-origin: center;
+    transition: transform 160ms ease, box-shadow 160ms ease, filter 160ms ease;
+    animation: cs-bounce 1.6s cubic-bezier(.22,.9,.3,1) infinite;
+  }
+
+  .btn-cs .cs-icon {
+    width: 14px;
+    height: 14px;
+    display: inline-block;
+    flex: 0 0 14px;
+  }
+
+  .btn-cs:hover,
+  .btn-cs:focus {
+    transform: translateY(-3px) scale(1.02);
+    box-shadow: 0 10px 26px rgba(11,140,255,0.22);
+    outline: none;
+  }
+
+  .btn-cs:active {
+    transform: translateY(0) scale(0.98);
+    box-shadow: 0 4px 12px rgba(11,140,255,0.12);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .btn-cs {
+      animation: none;
+      transition: none;
+    }
+  }
+
+  @keyframes cs-bounce {
+    0%   { transform: translateY(0); }
+    10%  { transform: translateY(-3px); }
+    30%  { transform: translateY(0); }
+    50%  { transform: translateY(-6px); }
+    70%  { transform: translateY(0); }
+    100% { transform: translateY(0); }
+  }
+</style>
+</head>
+<body style="display:flex;align-items:center;justify-content:center;height:100vh;background:#f6f8fb;margin:0;">
+
+  <!-- Link styled as button -->
+  <a href="https://harvestive-com-customer-customer.netlify.app/admin" target="_blank" class="btn-cs" aria-label="Go to Customer Service">
+    <svg class="cs-icon" viewBox="0 0 24 24" aria-hidden="true">
+      <path fill="#fff" d="M12 2a10 10 0 1 0 .001 20.001A10 10 0 0 0 12 2zm1 14h-2v-2h2v2zm0-4h-2V6h2v6z"/>
+    </svg>
+    Customer Service
+  </a>
+
+</body>
+</html>
+          
           <button id="logoutBtn" class="logout">Logout</button>
         </div>
       </div>
