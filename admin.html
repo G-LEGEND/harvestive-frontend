@@ -4,149 +4,483 @@
   <meta charset="utf-8" />
   <title>Admin Dashboard</title>
   <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <style>
-    :root { --bg:#f4f6f9; --card:#fff; --accent:#d4af37; --danger:#dc3545; --muted:#666; }
+    :root { 
+      --bg: #f4f6f9; 
+      --card: #fff; 
+      --accent: #d4af37; 
+      --danger: #dc3545; 
+      --success: #28a745;
+      --info: #17a2b8;
+      --muted: #666;
+      --border: #e0e0e0;
+    }
     *{box-sizing:border-box}
     body{
       margin:0; font-family:system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial;
-      background:var(--bg); display:flex;align-items:flex-start;justify-content:center;padding:28px;
+      background:var(--bg); padding:20px;
     }
-    .wrap{width:100%;max-width:980px}
+    .wrap{width:100%;max-width:1200px;margin:0 auto;}
     .card{
-      background:var(--card); border-radius:12px; padding:18px; box-shadow:0 8px 30px rgba(2,6,23,0.06);
-      margin-bottom:18px;
+      background:var(--card); border-radius:12px; padding:24px; box-shadow:0 8px 30px rgba(2,6,23,0.06);
+      margin-bottom:24px;
     }
-    h1{margin:0 0 12px;font-size:20px}
-    .cols{display:flex;gap:16px;flex-wrap:wrap}
-    .col{flex:1;min-width:260px}
-    form{display:flex;flex-direction:column;gap:10px}
+    h1{margin:0 0 12px;font-size:24px;color:#111;}
+    h2{margin:0 0 16px;font-size:20px;color:#111;}
+    h3{margin:0 0 12px;font-size:18px;color:#111;}
+    .cols{display:flex;gap:20px;flex-wrap:wrap;margin-bottom:24px;}
+    .col{flex:1;min-width:260px;}
+    form{display:flex;flex-direction:column;gap:12px;}
     input[type="text"], input[type="password"], input[type="file"]{
-      padding:10px;border:1px solid #e6e6e6;border-radius:8px;font-size:14px;
+      padding:12px;border:1px solid #e6e6e6;border-radius:8px;font-size:14px;width:100%;
     }
     button{
-      padding:10px 12px;border-radius:8px;border:0;background:var(--accent);color:#111;font-weight:700;cursor:pointer;
+      padding:12px 16px;border-radius:8px;border:0;background:var(--accent);color:#111;font-weight:700;cursor:pointer;
+      transition:all 0.3s ease;font-size:14px;
     }
-    .btn-danger{background:var(--danger);color:white}
-    .muted{color:var(--muted);font-size:13px}
-    .hidden{display:none}
-    .method-list{display:flex;flex-direction:column;gap:10px}
-    .method-item{display:flex;align-items:center;justify-content:space-between;padding:10px;border:1px solid #eee;border-radius:8px;background:#fafafa}
-    .method-info{display:flex;align-items:center;gap:12px}
-    .qr-thumb{width:56px;height:56px;border-radius:6px;object-fit:cover;border:1px solid #ddd}
-    .small{font-size:13px;color:#444}
-    .top-row{display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap}
-    .logout{background:#333;color:#fff;padding:8px 10px;border-radius:8px;font-weight:600;cursor:pointer}
-    .note{font-size:13px;color:#333}
+    button:hover{transform:translateY(-2px);box-shadow:0 4px 12px rgba(212, 175, 55, 0.3);}
+    .btn-danger{background:var(--danger);color:white;}
+    .btn-success{background:var(--success);color:white;}
+    .btn-info{background:var(--info);color:white;}
+    .muted{color:var(--muted);font-size:14px;line-height:1.5;}
+    .small{font-size:13px;color:#555;}
+    .hidden{display:none;}
+    .method-list{display:flex;flex-direction:column;gap:12px;}
+    .method-item{display:flex;align-items:center;justify-content:space-between;padding:12px;border:1px solid #eee;border-radius:8px;background:#fafafa;}
+    .method-info{display:flex;align-items:center;gap:12px;}
+    .qr-thumb{width:60px;height:60px;border-radius:6px;object-fit:cover;border:1px solid #ddd;}
+    .top-row{display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap;margin-bottom:20px;}
+    .logout{background:#333;color:#fff;padding:10px 14px;border-radius:8px;font-weight:600;cursor:pointer;}
+    .note{font-size:14px;color:#333;margin-bottom:8px;}
+    
+    /* Admin Navigation */
+    .admin-nav {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 2px solid var(--border);
+    }
+    .nav-btn {
+      padding: 10px 18px;
+      background: #f0f0f0;
+      border: 2px solid transparent;
+      border-radius: 8px;
+      color: #333;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      text-decoration: none;
+    }
+    .nav-btn:hover {
+      background: #e0e0e0;
+      transform: translateY(-2px);
+    }
+    .nav-btn.active {
+      background: var(--accent);
+      color: #111;
+      border-color: var(--accent);
+    }
+    
+    /* Stats Cards */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    .stat-card {
+      background: white;
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+      border-left: 4px solid var(--accent);
+    }
+    .stat-card.success { border-left-color: var(--success); }
+    .stat-card.info { border-left-color: var(--info); }
+    .stat-card.danger { border-left-color: var(--danger); }
+    .stat-value {
+      font-size: 28px;
+      font-weight: 700;
+      color: #111;
+      margin: 8px 0;
+    }
+    .stat-label {
+      font-size: 14px;
+      color: var(--muted);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .stat-icon {
+      font-size: 16px;
+    }
+    
+    /* Tables */
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 16px;
+    }
+    .data-table th {
+      background: #f8f9fa;
+      padding: 12px;
+      text-align: left;
+      font-weight: 600;
+      color: #333;
+      border-bottom: 2px solid var(--border);
+    }
+    .data-table td {
+      padding: 12px;
+      border-bottom: 1px solid var(--border);
+      vertical-align: middle;
+    }
+    .data-table tr:hover {
+      background: #f9f9f9;
+    }
+    .status-badge {
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+    .status-pending { background: #fff3cd; color: #856404; }
+    .status-approved { background: #d4edda; color: #155724; }
+    
+    /* Loading Spinner */
+    .spinner {
+      border: 3px solid #f3f3f3;
+      border-top: 3px solid var(--accent);
+      border-radius: 50%;
+      width: 30px;
+      height: 30px;
+      animation: spin 1s linear infinite;
+      margin: 20px auto;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    
+    /* Customer Service Button */
+    .btn-cs {
+      background: #007bff;
+      color: white;
+      padding: 10px 16px;
+      border-radius: 8px;
+      font-weight: 600;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.3s ease;
+    }
+    .btn-cs:hover {
+      background: #0056b3;
+      transform: translateY(-2px);
+      color: white;
+      text-decoration: none;
+    }
+    .cs-icon {
+      width: 18px;
+      height: 18px;
+    }
+    
+    /* Mobile Responsive */
+    @media (max-width: 768px) {
+      .admin-nav {
+        flex-direction: column;
+      }
+      .stats-grid {
+        grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      }
+      .top-row {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+    }
   </style>
 </head>
 <body>
   <div class="wrap">
-    <div class="card">
+    <!-- Login Card -->
+    <div id="loginCard" class="card">
       <div class="top-row">
         <div>
           <h1>Admin Panel</h1>
-          <div class="muted">Login with admin password to manage deposit methods</div>
+          <div class="muted">Login with admin password to manage the system</div>
         </div>
-        <div id="adminControls" class="muted"></div>
       </div>
-    </div>
-
-    <!-- Login card -->
-    <div id="loginCard" class="card">
+      
       <form id="loginForm">
-        <label class="small">Admin password</label>
-        <input id="adminPassword" type="password" placeholder="Enter admin password" required />
-        <div style="display:flex;gap:8px;">
-          <button type="submit">Login</button>
+        <div style="max-width: 400px;">
+          <label class="small">Admin Password</label>
+          <input id="adminPassword" type="password" placeholder="Enter admin password" required />
+          <div style="display:flex;gap:8px;margin-top:12px;">
+            <button type="submit">Login</button>
+          </div>
+          <div class="muted small" style="margin-top: 12px;">
+            Password: <code>sholashola</code>
+          </div>
         </div>
-        <div class="muted small">password : <code></code></div>
       </form>
     </div>
 
-    <!-- Manage area -->
-    <div id="manageArea" class="card hidden">
-      <div style="display:flex;gap:16px;align-items:center;justify-content:space-between">
-        <h2 style="margin:0">Deposit Methods</h2>
-        <div style="display:flex;gap:10px;">
-          <button onclick="location.href='admin-approve.html'" style="background:var(--accent);color:#111;padding:8px 12px;border-radius:8px;font-weight:700;cursor:pointer">
-            Payment Approved
+    <!-- Admin Dashboard (Hidden by default) -->
+    <div id="adminDashboard" class="hidden">
+      <!-- Admin Navigation -->
+      <div class="admin-nav">
+        <a href="#" class="nav-btn active" onclick="showSection('dashboard')">
+          <i class="fas fa-chart-line"></i> Dashboard
+        </a>
+        <a href="#" class="nav-btn" onclick="showSection('depositMethods')">
+          <i class="fas fa-wallet"></i> Deposit Methods
+        </a>
+        <a href="admin-approve.html" class="nav-btn">
+          <i class="fas fa-check-circle"></i> Approve Deposits
+        </a>
+        <a href="#" class="nav-btn" onclick="showSection('withdrawals')">
+          <i class="fas fa-money-bill"></i> Withdrawals
+        </a>
+        <a href="#" class="nav-btn" onclick="showSection('users')">
+          <i class="fas fa-users"></i> Users
+        </a>
+        <a href="https://harvestive-co-backend.onrender.com/admin" target="_blank" class="nav-btn">
+          <i class="fas fa-headset"></i> Customer Service
+        </a>
+        <button id="logoutBtn" class="logout" style="margin-left: auto;">
+          <i class="fas fa-sign-out-alt"></i> Logout
+        </button>
+      </div>
+
+      <!-- Dashboard Stats -->
+      <div id="dashboardSection" class="section">
+        <div class="top-row">
+          <h2>Dashboard Overview</h2>
+          <button onclick="loadStats()" style="background: #6c757d; color: white;">
+            <i class="fas fa-sync-alt"></i> Refresh
           </button>
-
-          <!-- ✅ Customer Service Button kept as-is -->
-          <a href="https://harvestive-com-customer-customer.netlify.app/admin" target="_blank" class="btn-cs" aria-label="Go to Customer Service">
-            <svg class="cs-icon" viewBox="0 0 24 24" aria-hidden="true">
-              <path fill="#fff" d="M12 2a10 10 0 1 0 .001 20.001A10 10 0 0 0 12 2zm1 14h-2v-2h2v2zm0-4h-2V6h2v6z"/>
-            </svg>
-            Customer Service
-          </a>
-
-          <button id="logoutBtn" class="logout">Logout</button>
         </div>
-      </div>
-
-      <div style="margin-top:12px;display:flex;gap:16px;flex-wrap:wrap">
-        <div style="flex:1;min-width:260px">
-          <form id="addMethodForm" enctype="multipart/form-data">
-            <label class="small">Method name (BTC, USDT, PayPal...)</label>
-            <input name="name" type="text" placeholder="BTC" required />
-
-            <label class="small">Payment address</label>
-            <input name="address" type="text" placeholder="Wallet address or email" required />
-
-            <label class="small">QR image (png/jpg)</label>
-            <input name="qr" type="file" accept="image/*" required />
-
-            <div style="display:flex;gap:8px;margin-top:8px">
-              <button type="submit">Add Method</button>
-              <button type="button" id="refreshBtn" style="background:#eee;color:#222">Refresh</button>
+        
+        <div id="statsLoading" class="spinner"></div>
+        <div id="statsContainer" class="stats-grid" style="display: none;">
+          <!-- Stats will be loaded here -->
+        </div>
+        
+        <div class="cols">
+          <div class="col">
+            <div class="card">
+              <h3>Quick Actions</h3>
+              <div style="display: grid; gap: 12px;">
+                <button onclick="location.href='admin-approve.html'" class="btn-success">
+                  <i class="fas fa-check"></i> Approve Pending Deposits
+                </button>
+                <button onclick="showSection('depositMethods')" class="btn-info">
+                  <i class="fas fa-plus"></i> Add Deposit Method
+                </button>
+                <button onclick="showSection('users')" class="btn-info">
+                  <i class="fas fa-user-cog"></i> Manage Users
+                </button>
+              </div>
             </div>
-          </form>
-        </div>
-
-        <div style="flex:1;min-width:320px">
-          <div style="margin-bottom:8px" class="note">Current methods (visible to users)</div>
-          <div id="methodList" class="method-list"></div>
+          </div>
+          <div class="col">
+            <div class="card">
+              <h3>Recent Activity</h3>
+              <div id="recentActivity" class="muted small">
+                Loading activity...
+              </div>
+            </div>
+          </div>
         </div>
       </div>
-    </div>
 
-    <!-- Log area -->
-    <div id="logCard" class="card hidden">
-      <h2 style="margin-top:0">Admin actions log</h2>
-      <div id="logOutput" class="muted small">No actions yet</div>
+      <!-- Deposit Methods Section -->
+      <div id="depositMethodsSection" class="section hidden">
+        <div class="top-row">
+          <h2>Deposit Methods Management</h2>
+          <div style="display:flex;gap:10px;">
+            <button onclick="location.href='admin-approve.html'">
+              <i class="fas fa-check-circle"></i> Payment Approvals
+            </button>
+          </div>
+        </div>
+
+        <div class="cols">
+          <div class="col">
+            <div class="card">
+              <h3>Add New Method</h3>
+              <form id="addMethodForm" enctype="multipart/form-data">
+                <label class="small">Method Name (BTC, USDT, PayPal...)</label>
+                <input name="name" type="text" placeholder="BTC" required />
+
+                <label class="small">Payment Address</label>
+                <input name="address" type="text" placeholder="Wallet address or email" required />
+
+                <label class="small">QR Code Image (png/jpg)</label>
+                <input name="qr" type="file" accept="image/*" required />
+
+                <div style="display:flex;gap:8px;margin-top:16px">
+                  <button type="submit">Add Method</button>
+                  <button type="button" onclick="loadMethods()" style="background:#eee;color:#222">
+                    <i class="fas fa-redo"></i> Refresh
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+
+          <div class="col">
+            <div class="card">
+              <h3>Current Methods</h3>
+              <div class="note">These methods are visible to users for deposits</div>
+              <div id="methodList" class="method-list">
+                Loading methods...
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Users Section -->
+      <div id="usersSection" class="section hidden">
+        <div class="card">
+          <div class="top-row">
+            <h2>User Management</h2>
+            <button onclick="loadUsers()">
+              <i class="fas fa-sync-alt"></i> Refresh Users
+            </button>
+          </div>
+          
+          <div id="usersLoading" class="spinner" style="display: none;"></div>
+          <div id="usersContainer">
+            <table class="data-table" id="usersTable">
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Email</th>
+                  <th>Balance</th>
+                  <th>Total Deposit</th>
+                  <th>Total Withdraw</th>
+                  <th>Joined</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="usersTableBody">
+                <tr><td colspan="7" style="text-align: center;">Loading users...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Withdrawals Section -->
+      <div id="withdrawalsSection" class="section hidden">
+        <div class="card">
+          <div class="top-row">
+            <h2>Withdrawal Management</h2>
+            <button onclick="loadWithdrawals()">
+              <i class="fas fa-sync-alt"></i> Refresh
+            </button>
+          </div>
+          
+          <div id="withdrawalsLoading" class="spinner" style="display: none;"></div>
+          <div id="withdrawalsContainer">
+            <table class="data-table" id="withdrawalsTable">
+              <thead>
+                <tr>
+                  <th>User</th>
+                  <th>Amount</th>
+                  <th>Method</th>
+                  <th>Address</th>
+                  <th>Status</th>
+                  <th>Date</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="withdrawalsTableBody">
+                <tr><td colspan="7" style="text-align: center;">Loading withdrawals...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 
   <script>
     const API_BASE = 'https://harvestive-co-backend.onrender.com';
+    let adminToken = localStorage.getItem('adminToken');
 
-    const loginForm = document.getElementById('loginForm');
-    const adminPassword = document.getElementById('adminPassword');
+    // DOM Elements
     const loginCard = document.getElementById('loginCard');
-    const manageArea = document.getElementById('manageArea');
+    const adminDashboard = document.getElementById('adminDashboard');
+    const loginForm = document.getElementById('loginForm');
+    const logoutBtn = document.getElementById('logoutBtn');
     const addMethodForm = document.getElementById('addMethodForm');
     const methodList = document.getElementById('methodList');
-    const refreshBtn = document.getElementById('refreshBtn');
-    const logoutBtn = document.getElementById('logoutBtn');
-    const logOutput = document.getElementById('logOutput');
-    const adminControls = document.getElementById('adminControls');
+    
+    // Sections
+    const sections = {
+      dashboard: document.getElementById('dashboardSection'),
+      depositMethods: document.getElementById('depositMethodsSection'),
+      users: document.getElementById('usersSection'),
+      withdrawals: document.getElementById('withdrawalsSection')
+    };
 
-    function appendLog(msg){
-      const now = new Date().toLocaleString();
-      logOutput.innerText = `[${now}] ${msg}\n` + (logOutput.innerText === "No actions yet" ? "" : logOutput.innerText);
+    // Utility Functions
+    function showSection(sectionName) {
+      // Update navigation
+      document.querySelectorAll('.nav-btn').forEach(btn => {
+        btn.classList.remove('active');
+      });
+      event.target.classList.add('active');
+      
+      // Show selected section
+      Object.values(sections).forEach(section => {
+        section.classList.add('hidden');
+      });
+      sections[sectionName].classList.remove('hidden');
+      
+      // Load data for section
+      switch(sectionName) {
+        case 'dashboard':
+          loadStats();
+          break;
+        case 'users':
+          loadUsers();
+          break;
+        case 'withdrawals':
+          loadWithdrawals();
+          break;
+        case 'depositMethods':
+          loadMethods();
+          break;
+      }
     }
 
-    async function safeParse(res){
-      const text = await res.text();
-      let json = null;
-      try { json = JSON.parse(text); } catch {}
-      return { ok: res.ok, status: res.status, json, text };
+    function formatDate(dateString) {
+      const date = new Date(dateString);
+      return date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
     }
 
-    // --- login ---
+    function formatCurrency(amount) {
+      return '$' + parseFloat(amount).toFixed(2);
+    }
+
+    // Login
+    if (adminToken) {
+      showAdminUI();
+    }
+
     loginForm.addEventListener('submit', async (e) => {
       e.preventDefault();
-      const password = adminPassword.value.trim();
+      const password = document.getElementById('adminPassword').value.trim();
       if (!password) return alert('Enter admin password');
 
       try {
@@ -155,80 +489,241 @@
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ password }),
         });
-        const parsed = await safeParse(res);
-        if (!parsed.ok) throw new Error(parsed.json?.error || parsed.text || `Status ${parsed.status}`);
-        const token = parsed.json?.token;
-        if (!token) throw new Error('No token in response');
-        localStorage.setItem('adminToken', token);
-        appendLog('Admin logged in');
-        showManageUI();
+        
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Login failed');
+        
+        adminToken = data.token;
+        localStorage.setItem('adminToken', adminToken);
+        showAdminUI();
       } catch (err) {
         console.error(err);
-        alert('Login error: ' + (err.message || err));
+        alert('Login error: ' + err.message);
       }
     });
 
-    function showManageUI(){
+    function showAdminUI() {
       loginCard.classList.add('hidden');
-      manageArea.classList.remove('hidden');
-      document.getElementById('logCard').classList.remove('hidden');
-      adminControls.innerHTML = `<span class="small">Logged as admin</span>`;
-      loadMethods();
+      adminDashboard.classList.remove('hidden');
+      loadStats();
     }
 
-    function hideManageUI(){
+    function hideAdminUI() {
       loginCard.classList.remove('hidden');
-      manageArea.classList.add('hidden');
-      document.getElementById('logCard').classList.add('hidden');
-      adminControls.innerHTML = '';
-      appendLog('Logged out');
+      adminDashboard.classList.add('hidden');
+      localStorage.removeItem('adminToken');
+      adminToken = null;
     }
 
-    if (localStorage.getItem('adminToken')) showManageUI();
+    logoutBtn.addEventListener('click', hideAdminUI);
 
-    logoutBtn.addEventListener('click', () => {
-      localStorage.removeItem('adminToken');
-      hideManageUI();
-    });
+    // Load Stats
+    async function loadStats() {
+      if (!adminToken) return;
+      
+      const statsContainer = document.getElementById('statsContainer');
+      const statsLoading = document.getElementById('statsLoading');
+      
+      statsContainer.style.display = 'none';
+      statsLoading.style.display = 'block';
+      
+      try {
+        const res = await fetch(`${API_BASE}/admin/stats`, {
+          headers: { Authorization: `Bearer ${adminToken}` }
+        });
+        
+        if (!res.ok) throw new Error('Failed to load stats');
+        const stats = await res.json();
+        
+        statsContainer.innerHTML = `
+          <div class="stat-card">
+            <div class="stat-label"><i class="fas fa-users stat-icon"></i> Total Users</div>
+            <div class="stat-value">${stats.totalUsers}</div>
+          </div>
+          <div class="stat-card success">
+            <div class="stat-label"><i class="fas fa-wallet stat-icon"></i> Total Deposits</div>
+            <div class="stat-value">${formatCurrency(stats.totalDepositAmount)}</div>
+            <div class="small">${stats.totalDeposits} transactions</div>
+          </div>
+          <div class="stat-card info">
+            <div class="stat-label"><i class="fas fa-money-bill stat-icon"></i> Total Withdrawals</div>
+            <div class="stat-value">${formatCurrency(stats.totalWithdrawalAmount)}</div>
+            <div class="small">${stats.totalWithdrawals} transactions</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label"><i class="fas fa-chart-line stat-icon"></i> Total Investments</div>
+            <div class="stat-value">${formatCurrency(stats.totalInvestmentAmount)}</div>
+            <div class="small">${stats.totalInvestments} plans</div>
+          </div>
+          <div class="stat-card danger">
+            <div class="stat-label"><i class="fas fa-clock stat-icon"></i> Pending Deposits</div>
+            <div class="stat-value">${stats.pendingDeposits}</div>
+            <div class="small">Needs approval</div>
+          </div>
+          <div class="stat-card danger">
+            <div class="stat-label"><i class="fas fa-clock stat-icon"></i> Pending Withdrawals</div>
+            <div class="stat-value">${stats.pendingWithdrawals}</div>
+            <div class="small">Needs approval</div>
+          </div>
+        `;
+        
+        statsLoading.style.display = 'none';
+        statsContainer.style.display = 'grid';
+        
+        // Update recent activity
+        document.getElementById('recentActivity').innerHTML = `
+          <div>Stats updated: ${new Date(stats.updatedAt).toLocaleTimeString()}</div>
+          <div>System running smoothly</div>
+        `;
+        
+      } catch (err) {
+        console.error(err);
+        statsLoading.style.display = 'none';
+        statsContainer.innerHTML = '<div class="muted">Error loading stats</div>';
+      }
+    }
 
-    // --- add method ---
+    // Load Users
+    async function loadUsers() {
+      if (!adminToken) return;
+      
+      const usersTableBody = document.getElementById('usersTableBody');
+      const usersLoading = document.getElementById('usersLoading');
+      
+      usersTableBody.innerHTML = '<tr><td colspan="7" style="text-align: center;">Loading...</td></tr>';
+      usersLoading.style.display = 'block';
+      
+      try {
+        const res = await fetch(`${API_BASE}/admin/users`, {
+          headers: { Authorization: `Bearer ${adminToken}` }
+        });
+        
+        if (!res.ok) throw new Error('Failed to load users');
+        const users = await res.json();
+        
+        usersTableBody.innerHTML = '';
+        users.forEach(user => {
+          const row = document.createElement('tr');
+          row.innerHTML = `
+            <td><strong>${user.firstName || ''} ${user.lastName || ''}</strong><br>
+                <small class="small">@${user.username || 'N/A'}</small></td>
+            <td>${user.email || 'N/A'}</td>
+            <td><strong>${formatCurrency(user.balance || 0)}</strong></td>
+            <td>${formatCurrency(user.totalDeposit || 0)}</td>
+            <td>${formatCurrency(user.totalWithdraw || 0)}</td>
+            <td>${new Date(user.createdAt).toLocaleDateString()}</td>
+            <td>
+              <button class="small" onclick="viewUser('${user._id}')" style="background: #6c757d; color: white; padding: 4px 8px; font-size: 12px;">
+                <i class="fas fa-eye"></i> View
+              </button>
+            </td>
+          `;
+          usersTableBody.appendChild(row);
+        });
+        
+        if (users.length === 0) {
+          usersTableBody.innerHTML = '<tr><td colspan="7" style="text-align: center;">No users found</td></tr>';
+        }
+        
+      } catch (err) {
+        console.error(err);
+        usersTableBody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: red;">Error loading users</td></tr>';
+      } finally {
+        usersLoading.style.display = 'none';
+      }
+    }
+
+    // Load Withdrawals
+    async function loadWithdrawals() {
+      if (!adminToken) return;
+      
+      const withdrawalsTableBody = document.getElementById('withdrawalsTableBody');
+      const withdrawalsLoading = document.getElementById('withdrawalsLoading');
+      
+      withdrawalsTableBody.innerHTML = '<tr><td colspan="7" style="text-align: center;">Loading...</td></tr>';
+      withdrawalsLoading.style.display = 'block';
+      
+      try {
+        const res = await fetch(`${API_BASE}/admin/withdrawals`, {
+          headers: { Authorization: `Bearer ${adminToken}` }
+        });
+        
+        if (!res.ok) throw new Error('Failed to load withdrawals');
+        const withdrawals = await res.json();
+        
+        withdrawalsTableBody.innerHTML = '';
+        withdrawals.forEach(w => {
+          const row = document.createElement('tr');
+          row.innerHTML = `
+            <td>${w.user?.fullName || 'Unknown'}<br>
+                <small class="small">${w.user?.email || ''}</small></td>
+            <td><strong>${formatCurrency(w.amount)}</strong></td>
+            <td>${w.method || 'N/A'}</td>
+            <td><small>${w.address || 'N/A'}</small></td>
+            <td><span class="status-badge ${w.status === 'pending' ? 'status-pending' : 'status-approved'}">
+                ${w.status}
+              </span></td>
+            <td>${formatDate(w.createdAt)}</td>
+            <td>
+              ${w.status === 'pending' ? `
+                <button class="small btn-success" onclick="approveWithdrawal('${w._id}')" style="padding: 4px 8px; font-size: 12px;">
+                  <i class="fas fa-check"></i> Approve
+                </button>
+              ` : 'Approved'}
+            </td>
+          `;
+          withdrawalsTableBody.appendChild(row);
+        });
+        
+        if (withdrawals.length === 0) {
+          withdrawalsTableBody.innerHTML = '<tr><td colspan="7" style="text-align: center;">No withdrawals found</td></tr>';
+        }
+        
+      } catch (err) {
+        console.error(err);
+        withdrawalsTableBody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: red;">Error loading withdrawals</td></tr>';
+      } finally {
+        withdrawalsLoading.style.display = 'none';
+      }
+    }
+
+    // Deposit Methods
     addMethodForm.addEventListener('submit', async (e) => {
       e.preventDefault();
-      const token = localStorage.getItem('adminToken');
-      if (!token) return alert('Please login first');
+      if (!adminToken) return alert('Please login first');
 
       const formData = new FormData(addMethodForm);
       try {
         const res = await fetch(`${API_BASE}/admin/deposit-methods`, {
           method: 'POST',
-          headers: { Authorization: `Bearer ${token}` },
+          headers: { Authorization: `Bearer ${adminToken}` },
           body: formData
         });
-        const parsed = await safeParse(res);
-        if (!parsed.ok) throw new Error(parsed.json?.error || parsed.text || `Status ${parsed.status}`);
-        appendLog('Added method: ' + (parsed.json?.id || 'unknown id'));
-        alert('Method added');
+        
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Failed to add method');
+        
+        alert('✅ Method added successfully');
         addMethodForm.reset();
         loadMethods();
       } catch (err) {
         console.error(err);
-        alert('Error adding method: ' + (err.message || err));
+        alert('Error adding method: ' + err.message);
       }
     });
 
-    // --- load methods ---
-    async function loadMethods(){
+    async function loadMethods() {
       methodList.innerHTML = 'Loading...';
       try {
         const res = await fetch(`${API_BASE}/user/deposit-methods`);
-        const parsed = await safeParse(res);
-        if (!parsed.ok) throw new Error(parsed.json?.error || parsed.text || `Status ${parsed.status}`);
-        const data = parsed.json || [];
+        const data = await res.json();
+        
         methodList.innerHTML = '';
         if (!data.length) {
-          methodList.innerHTML = '<div class="muted small">No methods</div>';
+          methodList.innerHTML = '<div class="muted small">No methods found</div>';
           return;
         }
+        
         data.forEach(m => {
           const div = document.createElement('div');
           div.className = 'method-item';
@@ -241,7 +736,9 @@
               </div>
             </div>
             <div style="display:flex;gap:8px;align-items:center">
-              <button class="btn-danger" onclick="deleteMethod('${m._id}')">Delete</button>
+              <button class="btn-danger" onclick="deleteMethod('${m._id}')" style="padding: 8px 12px;">
+                <i class="fas fa-trash"></i> Delete
+              </button>
             </div>
           `;
           methodList.appendChild(div);
@@ -252,32 +749,63 @@
       }
     }
 
-    refreshBtn.addEventListener('click', loadMethods);
-
-    // --- delete method ---
-    async function deleteMethod(id){
-      if (!confirm('Delete this method?')) return;
-      const token = localStorage.getItem('adminToken');
-      if (!token) return alert('Login first');
+    async function deleteMethod(id) {
+      if (!confirm('Are you sure you want to delete this method?')) return;
+      if (!adminToken) return alert('Please login first');
 
       try {
         const res = await fetch(`${API_BASE}/admin/deposit-methods/${id}`, {
           method: 'DELETE',
-          headers: { Authorization: `Bearer ${token}` }
+          headers: { Authorization: `Bearer ${adminToken}` }
         });
-        const parsed = await safeParse(res);
-        if (!parsed.ok) throw new Error(parsed.json?.error || parsed.text || `Status ${parsed.status}`);
-        appendLog('Deleted method ' + id);
-        alert('Deleted');
+        
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Failed to delete');
+        
+        alert('✅ Method deleted');
         loadMethods();
       } catch (err) {
         console.error(err);
-        alert('Error deleting method: ' + (err.message || err));
+        alert('Error deleting method: ' + err.message);
       }
     }
 
+    async function approveWithdrawal(id) {
+      if (!confirm('Approve this withdrawal?')) return;
+      if (!adminToken) return;
+
+      try {
+        const res = await fetch(`${API_BASE}/admin/withdraw/${id}/approve`, {
+          method: 'POST',
+          headers: { Authorization: `Bearer ${adminToken}` }
+        });
+        
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Failed to approve');
+        
+        alert('✅ Withdrawal approved');
+        loadWithdrawals();
+        loadStats(); // Refresh stats
+      } catch (err) {
+        console.error(err);
+        alert('Error approving withdrawal: ' + err.message);
+      }
+    }
+
+    function viewUser(userId) {
+      alert(`View user details for ID: ${userId}\n\nFeature to be implemented.`);
+      // Could open a modal with detailed user info
+    }
+
+    // Make functions globally available
     window.deleteMethod = deleteMethod;
     window.loadMethods = loadMethods;
+    window.loadStats = loadStats;
+    window.loadUsers = loadUsers;
+    window.loadWithdrawals = loadWithdrawals;
+    window.showSection = showSection;
+    window.approveWithdrawal = approveWithdrawal;
+    window.viewUser = viewUser;
   </script>
 </body>
 </html>

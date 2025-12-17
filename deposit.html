@@ -300,7 +300,7 @@
       formData.append("screenshot", screenshot);
 
       try {
-        const res = await fetch("https://harvestive-co-backend.onrender.com/deposit", {
+        const res = await fetch("https://harvestive-co-backend.onrender.com", {
           method: "POST",
           headers: { Authorization: `Bearer ${token}` },
           body: formData

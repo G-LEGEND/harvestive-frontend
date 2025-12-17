@@ -7,6 +7,219 @@
   <link rel="stylesheet" href="style.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <style>
+    /* Profile icon styles */
+    .profile-section {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      z-index: 100;
+    }
+    
+    .profile-btn {
+      background: linear-gradient(90deg, #d4af37, #f1c86a);
+      border: none;
+      border-radius: 50%;
+      width: 50px;
+      height: 50px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      transition: all 0.3s ease;
+    }
+    
+    .profile-btn:hover {
+      transform: scale(1.1);
+      box-shadow: 0 6px 18px rgba(0,0,0,0.2);
+    }
+    
+    .profile-btn i {
+      color: #111;
+      font-size: 22px;
+    }
+    
+    /* Profile modal styles */
+    .profile-modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 1000;
+      justify-content: center;
+      align-items: center;
+    }
+    
+    .profile-content {
+      background: white;
+      border-radius: 12px;
+      width: 90%;
+      max-width: 500px;
+      max-height: 80vh;
+      overflow-y: auto;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+      animation: slideIn 0.3s ease;
+    }
+    
+    @keyframes slideIn {
+      from { transform: translateY(-30px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+    
+    .profile-header {
+      background: linear-gradient(90deg, #d4af37, #f1c86a);
+      padding: 20px;
+      border-radius: 12px 12px 0 0;
+      color: #111;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .profile-header h3 {
+      margin: 0;
+      font-size: 20px;
+    }
+    
+    .close-profile {
+      background: none;
+      border: none;
+      color: #111;
+      font-size: 24px;
+      cursor: pointer;
+      padding: 0;
+      width: 30px;
+      height: 30px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      transition: background 0.2s;
+    }
+    
+    .close-profile:hover {
+      background: rgba(0,0,0,0.1);
+    }
+    
+    .profile-body {
+      padding: 25px;
+    }
+    
+    .profile-info {
+      margin-bottom: 25px;
+    }
+    
+    .profile-field {
+      margin-bottom: 15px;
+    }
+    
+    .profile-field label {
+      display: block;
+      font-weight: 600;
+      margin-bottom: 5px;
+      color: #333;
+      font-size: 14px;
+    }
+    
+    .profile-field .value {
+      padding: 10px;
+      background: #f8f9fa;
+      border-radius: 6px;
+      border: 1px solid #e0e0e0;
+      color: #555;
+      font-size: 15px;
+    }
+    
+    .profile-actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 25px;
+    }
+    
+    .profile-btn-primary {
+      flex: 1;
+      background: linear-gradient(90deg, #d4af37, #f1c86a);
+      color: #111;
+      border: none;
+      padding: 12px;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    
+    .profile-btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 15px rgba(201, 152, 42, 0.25);
+    }
+    
+    .profile-btn-secondary {
+      flex: 1;
+      background: #f8f9fa;
+      color: #333;
+      border: 1px solid #ddd;
+      padding: 12px;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    
+    .profile-btn-secondary:hover {
+      background: #e9ecef;
+    }
+    
+    /* Edit profile modal */
+    .edit-profile-form {
+      display: grid;
+      gap: 15px;
+    }
+    
+    .edit-profile-form input {
+      width: 100%;
+      padding: 12px 15px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      font-size: 15px;
+      font-family: "Poppins", sans-serif;
+      transition: all 0.3s ease;
+      background: #fff;
+    }
+    
+    .edit-profile-form input:focus {
+      outline: none;
+      border-color: #d4af37;
+      box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.1);
+    }
+    
+    .form-row {
+      display: flex;
+      gap: 15px;
+    }
+    
+    .form-row > div {
+      flex: 1;
+    }
+    
+    /* Password change form */
+    .password-form {
+      display: grid;
+      gap: 15px;
+      margin-top: 20px;
+      padding-top: 20px;
+      border-top: 1px solid #eee;
+    }
+    
+    .password-form h4 {
+      margin: 0 0 10px 0;
+      color: #333;
+      font-size: 16px;
+    }
+    
+    /* Existing styles */
     .options-img {
       transition: transform 0.2s ease, opacity 0.2s ease;
       cursor: pointer;
@@ -52,9 +265,51 @@
     .support-section a:hover {
       text-decoration: underline;
     }
+    
+    /* Responsive design */
+    @media (max-width: 480px) {
+      .profile-section {
+        top: 15px;
+        right: 15px;
+      }
+      
+      .profile-btn {
+        width: 45px;
+        height: 45px;
+      }
+      
+      .profile-btn i {
+        font-size: 20px;
+      }
+      
+      .profile-content {
+        width: 95%;
+        max-height: 85vh;
+      }
+      
+      .profile-body {
+        padding: 20px;
+      }
+      
+      .form-row {
+        flex-direction: column;
+        gap: 0;
+      }
+      
+      .profile-actions {
+        flex-direction: column;
+      }
+    }
   </style>
 </head>
 <body>
+  <!-- Profile Button -->
+  <div class="profile-section">
+    <button class="profile-btn" onclick="showProfile()">
+      <i class="fas fa-user"></i>
+    </button>
+  </div>
+
   <div class="dashboard-container">
     <h2 id="welcomeText">Welcome, User</h2>
 
@@ -108,41 +363,9 @@
     <button onclick="logout()" class="login-btn" style="margin-top:20px;">Logout</button>
 
     <!-- Live Chat Support Button -->
-    <a href="https://harvestive-custimer-chat.netlify.app/" 
-   class="login-btn">
-  Live Chat Support
-</a>
-
-<style>
-  .login-btn {
-    display: inline-block;
-    text-align: center;
-    background: #d4af37;          /* gold color */
-    color: #fff;
-    font-size: 13px;              /* smaller text */
-    font-weight: 600;
-    padding: 6px 12px;            /* smaller size */
-    border-radius: 8px;
-    text-decoration: none;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-    animation: bounce 1.6s cubic-bezier(.22,.9,.3,1) infinite;
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
-  }
-
-  .login-btn:hover,
-  .login-btn:focus {
-    transform: translateY(-3px) scale(1.05);
-    box-shadow: 0 8px 20px rgba(0,0,0,0.25);
-  }
-
-  @keyframes bounce {
-    0%, 100% { transform: translateY(0); }
-    20% { transform: translateY(-4px); }
-    40% { transform: translateY(0); }
-    60% { transform: translateY(-7px); }
-    80% { transform: translateY(0); }
-  }
-</style>
+    <a href="https://harvestive-custimer-chat.netlify.app/" class="login-btn">
+      Live Chat Support
+    </a>
 
     <!-- Customer Service Section -->
     <div class="support-section">
@@ -150,6 +373,102 @@
       <a href="mailto:info.myharvestine@gmail.com">
         info.myharvestine@gmail.com
       </a>
+    </div>
+  </div>
+
+  <!-- Profile Modal -->
+  <div id="profileModal" class="profile-modal">
+    <div class="profile-content">
+      <div class="profile-header">
+        <h3>Profile Information</h3>
+        <button class="close-profile" onclick="closeProfile()">×</button>
+      </div>
+      <div class="profile-body">
+        <div class="profile-info" id="profileInfo">
+          <!-- Profile info will be loaded here -->
+          <div class="profile-field">
+            <label>Full Name</label>
+            <div class="value" id="profileFullName">Loading...</div>
+          </div>
+          <div class="profile-field">
+            <label>Email</label>
+            <div class="value" id="profileEmail">Loading...</div>
+          </div>
+          <div class="profile-field">
+            <label>Username</label>
+            <div class="value" id="profileUsername">Loading...</div>
+          </div>
+          <div class="profile-field">
+            <label>Date of Birth</label>
+            <div class="value" id="profileDOB">Loading...</div>
+          </div>
+          <div class="profile-field">
+            <label>Phone</label>
+            <div class="value" id="profilePhone">Not set</div>
+          </div>
+          <div class="profile-field">
+            <label>Country</label>
+            <div class="value" id="profileCountry">Not set</div>
+          </div>
+          <div class="profile-field">
+            <label>Address</label>
+            <div class="value" id="profileAddress">Not set</div>
+          </div>
+          <div class="profile-field">
+            <label>Account Created</label>
+            <div class="value" id="profileCreated">Loading...</div>
+          </div>
+        </div>
+        
+        <!-- Edit Profile Form (hidden by default) -->
+        <div class="edit-profile-form" id="editProfileForm" style="display: none;">
+          <div class="form-row">
+            <div>
+              <label>First Name</label>
+              <input type="text" id="editFirstName" placeholder="Enter first name">
+            </div>
+            <div>
+              <label>Last Name</label>
+              <input type="text" id="editLastName" placeholder="Enter last name">
+            </div>
+          </div>
+          <div>
+            <label>Phone</label>
+            <input type="tel" id="editPhone" placeholder="Enter phone number">
+          </div>
+          <div>
+            <label>Country</label>
+            <input type="text" id="editCountry" placeholder="Enter country">
+          </div>
+          <div>
+            <label>Address</label>
+            <input type="text" id="editAddress" placeholder="Enter address">
+          </div>
+          
+          <!-- Password Change Section -->
+          <div class="password-form">
+            <h4>Change Password</h4>
+            <div>
+              <label>Current Password</label>
+              <input type="password" id="currentPassword" placeholder="Enter current password">
+            </div>
+            <div>
+              <label>New Password</label>
+              <input type="password" id="newPassword" placeholder="Enter new password (min. 6 chars)">
+            </div>
+            <div>
+              <label>Confirm New Password</label>
+              <input type="password" id="confirmPassword" placeholder="Confirm new password">
+            </div>
+          </div>
+        </div>
+        
+        <div class="profile-actions">
+          <button class="profile-btn-secondary" id="editProfileBtn" onclick="toggleEditProfile()">Edit Profile</button>
+          <button class="profile-btn-primary" id="saveProfileBtn" onclick="saveProfile()" style="display: none;">Save Changes</button>
+          <button class="profile-btn-primary" id="viewProfileBtn" onclick="toggleEditProfile()" style="display: none;">Cancel Edit</button>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -162,6 +481,9 @@
   </div>
 
   <script>
+    let currentProfileData = null;
+    let isEditing = false;
+
     async function loadDashboard() {
       const token = localStorage.getItem("token");
       if (!token) {
@@ -184,7 +506,11 @@
         }
 
         const user = data.user || {};
-        document.getElementById("welcomeText").innerText = "Welcome, " + (user.username || "User");
+        currentProfileData = user;
+        
+        // Update welcome message with full name
+        const fullName = `${user.firstName || ''} ${user.lastName || ''}`.trim();
+        document.getElementById("welcomeText").innerText = "Welcome, " + (fullName || user.username || "User");
         document.getElementById("balance").innerText = ((user.balance || 0).toFixed(2)) + " USD";
 
         const deposits = data.deposits || [];
@@ -212,6 +538,10 @@
 
         document.getElementById("referralLink").value =
           window.location.origin + "/register.html?ref=" + (user._id || "");
+
+        // Preload profile data
+        loadProfileData(user);
+
       } catch (err) {
         console.error(err);
         alert("Error loading dashboard. Please login again.");
@@ -220,6 +550,212 @@
       }
 
       document.getElementById("loading").style.display = "none";
+    }
+
+    function loadProfileData(user) {
+      const fullName = `${user.firstName || ''} ${user.lastName || ''}`.trim();
+      document.getElementById("profileFullName").textContent = fullName || "Not set";
+      document.getElementById("profileEmail").textContent = user.email || "Not set";
+      document.getElementById("profileUsername").textContent = user.username || "Not set";
+      
+      // Format date of birth
+      if (user.dateOfBirth) {
+        const dob = new Date(user.dateOfBirth);
+        document.getElementById("profileDOB").textContent = dob.toLocaleDateString();
+      } else {
+        document.getElementById("profileDOB").textContent = "Not set";
+      }
+      
+      document.getElementById("profilePhone").textContent = user.profile?.phone || "Not set";
+      document.getElementById("profileCountry").textContent = user.profile?.country || "Not set";
+      document.getElementById("profileAddress").textContent = user.profile?.address || "Not set";
+      
+      // Format account creation date
+      if (user.createdAt) {
+        const created = new Date(user.createdAt);
+        document.getElementById("profileCreated").textContent = created.toLocaleDateString();
+      } else {
+        document.getElementById("profileCreated").textContent = "Not set";
+      }
+    }
+
+    function showProfile() {
+      const modal = document.getElementById("profileModal");
+      modal.style.display = "flex";
+      
+      // Load fresh profile data when modal opens
+      if (currentProfileData) {
+        loadProfileData(currentProfileData);
+      } else {
+        fetchProfile();
+      }
+    }
+
+    function closeProfile() {
+      const modal = document.getElementById("profileModal");
+      modal.style.display = "none";
+      toggleEditProfile(false); // Reset to view mode
+    }
+
+    function toggleEditProfile(showEdit = null) {
+      const profileInfo = document.getElementById("profileInfo");
+      const editForm = document.getElementById("editProfileForm");
+      const editBtn = document.getElementById("editProfileBtn");
+      const saveBtn = document.getElementById("saveProfileBtn");
+      const viewBtn = document.getElementById("viewProfileBtn");
+      
+      if (showEdit === null) {
+        isEditing = !isEditing;
+      } else {
+        isEditing = showEdit;
+      }
+      
+      if (isEditing) {
+        profileInfo.style.display = "none";
+        editForm.style.display = "grid";
+        editBtn.style.display = "none";
+        saveBtn.style.display = "block";
+        viewBtn.style.display = "block";
+        
+        // Populate edit form with current data
+        document.getElementById("editFirstName").value = currentProfileData?.firstName || "";
+        document.getElementById("editLastName").value = currentProfileData?.lastName || "";
+        document.getElementById("editPhone").value = currentProfileData?.profile?.phone || "";
+        document.getElementById("editCountry").value = currentProfileData?.profile?.country || "";
+        document.getElementById("editAddress").value = currentProfileData?.profile?.address || "";
+        
+        // Clear password fields
+        document.getElementById("currentPassword").value = "";
+        document.getElementById("newPassword").value = "";
+        document.getElementById("confirmPassword").value = "";
+      } else {
+        profileInfo.style.display = "block";
+        editForm.style.display = "none";
+        editBtn.style.display = "block";
+        saveBtn.style.display = "none";
+        viewBtn.style.display = "none";
+      }
+    }
+
+    async function fetchProfile() {
+      const token = localStorage.getItem("token");
+      if (!token) return;
+      
+      try {
+        const res = await fetch("https://harvestive-co-backend.onrender.com/user/profile", {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        
+        if (res.ok) {
+          const data = await res.json();
+          currentProfileData = data.user;
+          loadProfileData(data.user);
+        }
+      } catch (err) {
+        console.error("Error fetching profile:", err);
+      }
+    }
+
+    async function saveProfile() {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        alert("Please login again");
+        return;
+      }
+      
+      const firstName = document.getElementById("editFirstName").value.trim();
+      const lastName = document.getElementById("editLastName").value.trim();
+      const phone = document.getElementById("editPhone").value.trim();
+      const country = document.getElementById("editCountry").value.trim();
+      const address = document.getElementById("editAddress").value.trim();
+      const currentPassword = document.getElementById("currentPassword").value.trim();
+      const newPassword = document.getElementById("newPassword").value.trim();
+      const confirmPassword = document.getElementById("confirmPassword").value.trim();
+      
+      // Validate name fields
+      if (firstName && firstName.length < 2) {
+        alert("First name must be at least 2 characters");
+        return;
+      }
+      
+      if (lastName && lastName.length < 2) {
+        alert("Last name must be at least 2 characters");
+        return;
+      }
+      
+      // Validate passwords if provided
+      if (currentPassword || newPassword || confirmPassword) {
+        if (!currentPassword) {
+          alert("Please enter current password to change password");
+          return;
+        }
+        
+        if (newPassword.length < 6) {
+          alert("New password must be at least 6 characters");
+          return;
+        }
+        
+        if (newPassword !== confirmPassword) {
+          alert("New passwords do not match");
+          return;
+        }
+      }
+      
+      try {
+        // Update profile first
+        const profileRes = await fetch("https://harvestive-co-backend.onrender.com/user/profile", {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`
+          },
+          body: JSON.stringify({
+            firstName,
+            lastName,
+            phone,
+            country,
+            address
+          })
+        });
+        
+        let profileSuccess = profileRes.ok;
+        
+        // Update password if provided
+        let passwordSuccess = true;
+        if (currentPassword && newPassword) {
+          const passwordRes = await fetch("https://harvestive-co-backend.onrender.com/user/change-password", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`
+            },
+            body: JSON.stringify({
+              currentPassword,
+              newPassword
+            })
+          });
+          
+          passwordSuccess = passwordRes.ok;
+          if (!passwordSuccess) {
+            const errorData = await passwordRes.json();
+            alert("Password change failed: " + (errorData.error || "Unknown error"));
+          }
+        }
+        
+        if (profileSuccess) {
+          alert("✅ Profile updated successfully!");
+          toggleEditProfile(false);
+          fetchProfile(); // Refresh profile data
+          loadDashboard(); // Refresh dashboard data
+        } else {
+          const errorData = await profileRes.json();
+          alert("Profile update failed: " + (errorData.error || "Unknown error"));
+        }
+        
+      } catch (err) {
+        console.error("Error updating profile:", err);
+        alert("❌ Error updating profile. Please try again.");
+      }
     }
 
     function logout() {
@@ -231,6 +767,13 @@
       const input = document.getElementById("referralLink");
       navigator.clipboard.writeText(input.value).then(() => alert("Referral link copied!"));
     }
+
+    // Close modal when clicking outside
+    document.getElementById("profileModal").addEventListener('click', function(e) {
+      if (e.target === this) {
+        closeProfile();
+      }
+    });
 
     window.onload = loadDashboard;
   </script>

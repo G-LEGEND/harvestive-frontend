@@ -3,43 +3,300 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Register - Investment App</title>
-  <link rel="stylesheet" href="style.css">
+  <title>Register - My Harvestive Limited</title>
+  
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@0;400;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+  
   <style>
-    /* Overlay style */
+    :root {
+      --bg: #f3f4f6;
+      --black: #0a0a0a;
+      --gold1: #c9982a;
+      --gold2: #f1c86a;
+      --card-bg: #ffffff;
+      --muted: #777;
+      --accent: #d9c07a;
+      --shadow: 0 10px 25px rgba(10,10,10,0.08);
+      --radius: 10px;
+    }
+    
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    
+    body {
+      font-family: "Poppins", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+      background: linear-gradient(180deg, var(--bg), #efefef);
+      color: var(--black);
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      line-height: 1.45;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    
+    /* Login Container - Updated to match your index style */
+    .login-container {
+      background: var(--card-bg);
+      border-radius: 12px;
+      box-shadow: var(--shadow);
+      padding: 40px;
+      width: 100%;
+      max-width: 500px; /* Slightly wider for more fields */
+      position: relative;
+      overflow: visible;
+    }
+    
+    /* Logo styling with curved edges */
+    .logo {
+      display: block;
+      margin: 0 auto 30px;
+      max-height: 60px;
+      width: auto;
+      border-radius: 10px; /* Curved edges - same as login */
+    }
+    
+    /* Register section - matching your index buttons */
+    .register-section {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 30px;
+      padding: 15px;
+      background: rgba(8,8,8,0.85);
+      border-radius: 8px;
+      color: #fff;
+    }
+    
+    .register-section span {
+      font-size: 14px;
+      opacity: 0.9;
+    }
+    
+    /* Button styles matching your index */
+    .register-btn {
+      background: linear-gradient(90deg, var(--gold1), var(--gold2));
+      color: #111;
+      padding: 8px 16px;
+      border-radius: 6px;
+      border: none;
+      font-weight: 600;
+      cursor: pointer;
+      font-size: 13px;
+    }
+    
+    /* Form title */
+    h2 {
+      font-family: "Playfair Display", serif;
+      font-size: 24px;
+      margin-bottom: 25px;
+      text-align: center;
+      color: var(--black);
+    }
+    
+    /* Form labels */
+    label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 600;
+      color: var(--black);
+      font-size: 14px;
+    }
+    
+    /* Input fields matching your index */
+    input, select {
+      width: 100%;
+      padding: 12px 15px;
+      margin-bottom: 20px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      font-size: 15px;
+      font-family: "Poppins", sans-serif;
+      transition: all 0.3s ease;
+      background: #fff;
+    }
+    
+    input:focus, select:focus {
+      outline: none;
+      border-color: var(--gold1);
+      box-shadow: 0 0 0 3px rgba(201, 152, 42, 0.1);
+    }
+    
+    /* Date of birth container */
+    .dob-container {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+    
+    .dob-container select {
+      flex: 1;
+      margin-bottom: 0;
+    }
+    
+    /* Name fields container */
+    .name-container {
+      display: flex;
+      gap: 15px;
+      margin-bottom: 20px;
+    }
+    
+    .name-container div {
+      flex: 1;
+    }
+    
+    /* Login button */
+    .login-btn {
+      width: 100%;
+      padding: 14px;
+      background: linear-gradient(90deg, var(--gold1), var(--gold2));
+      color: #111;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: 10px;
+      transition: all 0.3s ease;
+      font-family: "Poppins", sans-serif;
+    }
+    
+    .login-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 15px rgba(201, 152, 42, 0.25);
+    }
+    
+    /* Footer matching your index */
+    .footer {
+      text-align: center;
+      margin-top: 30px;
+      padding-top: 20px;
+      border-top: 1px solid #eee;
+      color: var(--muted);
+      font-size: 12px;
+    }
+    
+    /* Loading overlay matching your index theme */
     .loading-overlay {
       display: none;
       position: fixed;
-      top: 0; left: 0;
-      width: 100%; height: 100%;
-      background: rgba(255, 255, 255, 0.9);
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(255, 255, 255, 0.95);
       z-index: 1000;
       justify-content: center;
       align-items: center;
       flex-direction: column;
     }
+    
     .spinner {
       border: 6px solid #f3f3f3;
-      border-top: 6px solid #007bff;
+      border-top: 6px solid var(--gold1);
       border-radius: 50%;
-      width: 50px; height: 50px;
+      width: 50px;
+      height: 50px;
       animation: spin 1s linear infinite;
     }
+    
     @keyframes spin {
       0% { transform: rotate(0deg); }
       100% { transform: rotate(360deg); }
     }
+    
     .loading-text {
-      margin-top: 15px;
+      margin-top: 20px;
       font-size: 16px;
-      color: #333;
+      color: var(--black);
+      font-weight: 600;
+      font-family: "Poppins", sans-serif;
+    }
+    
+    /* Background image decoration - subtle like your index */
+    .login-container::before {
+      content: '';
+      position: absolute;
+      top: -10px;
+      left: -10px;
+      right: -10px;
+      bottom: -10px;
+      background: linear-gradient(45deg, var(--gold1), var(--gold2), transparent);
+      z-index: -1;
+      border-radius: 16px;
+      opacity: 0.1;
+    }
+    
+    /* Responsive design */
+    @media (max-width: 480px) {
+      .login-container {
+        padding: 30px 20px;
+        margin: 10px;
+      }
+      
+      h2 {
+        font-size: 20px;
+      }
+      
+      .register-section {
+        flex-direction: column;
+        gap: 10px;
+        text-align: center;
+      }
+      
+      .logo {
+        max-height: 50px;
+      }
+      
+      .name-container {
+        flex-direction: column;
+        gap: 0;
+      }
+      
+      .dob-container {
+        flex-direction: column;
+        gap: 10px;
+      }
+    }
+    
+    /* Link to home page */
+    .home-link {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      text-decoration: none;
+      color: var(--black);
+      font-weight: 600;
+      font-size: 14px;
+      transition: all 0.3s ease;
+    }
+    
+    .home-link:hover {
+      color: var(--gold1);
+    }
+    
+    .home-link::before {
+      content: '←';
+      font-size: 16px;
     }
   </style>
 </head>
 <body>
+  <!-- Link back to home page -->
+  <a href="index.html" class="home-link">Back to Home</a>
+  
   <div class="login-container">
-    <!-- Logo -->
-    <img src="https://i.supaimg.com/c3856786-edd2-402a-9a14-32d60a5a0118.png" alt="Logo" class="logo">
+    <!-- Logo with curved edges -->
+    <img src="https://i.supaimg.com/081d8bfa-a08a-4aa5-a4a7-175608eee7b9.png" alt="My Harvestive Limited Logo" class="logo">
 
     <!-- Back to Login -->
     <div class="register-section">
@@ -50,18 +307,58 @@
     <!-- Register form -->
     <h2>Create your account</h2>
 
+    <!-- Name fields -->
+    <div class="name-container">
+      <div>
+        <label>First Name</label>
+        <input id="firstName" type="text" placeholder="Enter first name" required>
+      </div>
+      <div>
+        <label>Last Name</label>
+        <input id="lastName" type="text" placeholder="Enter last name" required>
+      </div>
+    </div>
+
+    <!-- Date of Birth -->
+    <label>Date of Birth</label>
+    <div class="dob-container">
+      <select id="dobDay" required>
+        <option value="">Day</option>
+        <!-- Days 1-31 -->
+      </select>
+      <select id="dobMonth" required>
+        <option value="">Month</option>
+        <option value="01">January</option>
+        <option value="02">February</option>
+        <option value="03">March</option>
+        <option value="04">April</option>
+        <option value="05">May</option>
+        <option value="06">June</option>
+        <option value="07">July</option>
+        <option value="08">August</option>
+        <option value="09">September</option>
+        <option value="10">October</option>
+        <option value="11">November</option>
+        <option value="12">December</option>
+      </select>
+      <select id="dobYear" required>
+        <option value="">Year</option>
+        <!-- Years 1900-current year -->
+      </select>
+    </div>
+
     <label>Email</label>
     <input id="regEmail" type="email" placeholder="Enter your email" required>
 
     <label>Password</label>
-    <input id="regPassword" type="password" placeholder="Enter password" required>
+    <input id="regPassword" type="password" placeholder="Enter password (min. 6 characters)" required>
 
     <label>Confirm Password</label>
     <input id="regPassword2" type="password" placeholder="Confirm password" required>
 
     <button onclick="register()" class="login-btn">Register</button>
 
-    <p class="footer">Copyright 2025 My Investment App all rights reserved.</p>
+    <p class="footer">Copyright 2023 My Harvestive Limited all rights reserved.</p>
   </div>
 
   <!-- Loading Overlay -->
@@ -71,16 +368,97 @@
   </div>
 
   <script>
+    // Populate day and year dropdowns
+    document.addEventListener('DOMContentLoaded', function() {
+      // Populate days (1-31)
+      const daySelect = document.getElementById('dobDay');
+      for (let i = 1; i <= 31; i++) {
+        const option = document.createElement('option');
+        option.value = i < 10 ? '0' + i : i.toString();
+        option.textContent = i;
+        daySelect.appendChild(option);
+      }
+      
+      // Populate years (1900-current year)
+      const yearSelect = document.getElementById('dobYear');
+      const currentYear = new Date().getFullYear();
+      for (let i = currentYear; i >= 1900; i--) {
+        const option = document.createElement('option');
+        option.value = i.toString();
+        option.textContent = i;
+        yearSelect.appendChild(option);
+      }
+      
+      // Auto-focus first name field
+      document.getElementById('firstName').focus();
+      
+      // Allow registration with Enter key
+      const inputs = document.querySelectorAll('input, select');
+      inputs.forEach(input => {
+        input.addEventListener('keypress', function(e) {
+          if (e.key === 'Enter') {
+            register();
+          }
+        });
+      });
+    });
+    
+    // Validate date of birth
+    function isValidDate(day, month, year) {
+      const date = new Date(year, month - 1, day);
+      return date.getFullYear() == year && 
+             date.getMonth() == month - 1 && 
+             date.getDate() == day;
+    }
+    
+    // Check if user is at least 13 years old
+    function isAtLeast13YearsOld(year, month, day) {
+      const today = new Date();
+      const birthDate = new Date(year, month - 1, day);
+      let age = today.getFullYear() - birthDate.getFullYear();
+      const monthDiff = today.getMonth() - birthDate.getMonth();
+      
+      if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+        age--;
+      }
+      return age >= 13;
+    }
+
     async function register() {
+      const firstName = document.getElementById("firstName").value.trim();
+      const lastName = document.getElementById("lastName").value.trim();
       const email = document.getElementById("regEmail").value.trim();
       const password = document.getElementById("regPassword").value.trim();
       const password2 = document.getElementById("regPassword2").value.trim();
+      const dobDay = document.getElementById("dobDay").value;
+      const dobMonth = document.getElementById("dobMonth").value;
+      const dobYear = document.getElementById("dobYear").value;
 
-      if (!email || !password || !password2) {
+      // Basic validation
+      if (!firstName || !lastName || !email || !password || !password2 || !dobDay || !dobMonth || !dobYear) {
         alert("⚠️ Please fill in all fields.");
         return;
       }
 
+      // Name validation
+      if (firstName.length < 2) {
+        alert("⚠️ First name must be at least 2 characters.");
+        return;
+      }
+
+      if (lastName.length < 2) {
+        alert("⚠️ Last name must be at least 2 characters.");
+        return;
+      }
+
+      // Email validation
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        alert("⚠️ Please enter a valid email address.");
+        return;
+      }
+
+      // Password validation
       if (password.length < 6) {
         alert("⚠️ Password must be at least 6 characters.");
         return;
@@ -91,6 +469,21 @@
         return;
       }
 
+      // Date of birth validation
+      if (!isValidDate(dobDay, dobMonth, dobYear)) {
+        alert("⚠️ Please enter a valid date of birth.");
+        return;
+      }
+
+      // Age validation (at least 13 years old)
+      if (!isAtLeast13YearsOld(dobYear, dobMonth, dobDay)) {
+        alert("⚠️ You must be at least 13 years old to register.");
+        return;
+      }
+
+      // Format date of birth as YYYY-MM-DD
+      const formattedDOB = `${dobYear}-${dobMonth}-${dobDay}`;
+
       // Show loading overlay
       const overlay = document.getElementById("loadingOverlay");
       overlay.style.display = "flex";
@@ -100,9 +493,12 @@
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ 
+            firstName,
+            lastName,
             username: email.split("@")[0], // use part of email as username
             email, 
-            password 
+            password,
+            dateOfBirth: formattedDOB
           })
         });
 

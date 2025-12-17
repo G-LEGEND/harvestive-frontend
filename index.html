@@ -3,45 +3,309 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Login - Investment App</title>
-  <link rel="stylesheet" href="style.css">
+  <title>Login - My Harvestive Limited</title>
+  
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@0;400;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+  
   <style>
-    /* Overlay style */
+    :root {
+      --bg: #f3f4f6;
+      --black: #0a0a0a;
+      --gold1: #c9982a;
+      --gold2: #f1c86a;
+      --card-bg: #ffffff;
+      --muted: #777;
+      --accent: #d9c07a;
+      --shadow: 0 10px 25px rgba(10,10,10,0.08);
+      --radius: 10px;
+    }
+    
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    
+    body {
+      font-family: "Poppins", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+      background: linear-gradient(180deg, var(--bg), #efefef);
+      color: var(--black);
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      line-height: 1.45;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    
+    /* Login Container - Updated to match your index style */
+    .login-container {
+      background: var(--card-bg);
+      border-radius: 12px;
+      box-shadow: var(--shadow);
+      padding: 40px;
+      width: 100%;
+      max-width: 450px;
+      position: relative;
+      overflow: visible;
+    }
+    
+    /* Logo styling matching your index */
+    .logo {
+      display: block;
+      margin: 0 auto 30px;
+      max-height: 60px;
+      width: auto;
+    }
+    
+    /* Register section - matching your index buttons */
+    .register-section {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 30px;
+      padding: 15px;
+      background: rgba(8,8,8,0.85);
+      border-radius: 8px;
+      color: #fff;
+    }
+    
+    .register-section span {
+      font-size: 14px;
+      opacity: 0.9;
+    }
+    
+    /* Button styles matching your index */
+    .btn {
+      display: inline-block;
+      padding: 10px 20px;
+      border-radius: 8px;
+      border: 0;
+      cursor: pointer;
+      font-weight: 600;
+      font-family: "Poppins", sans-serif;
+      font-size: 14px;
+      transition: all 0.3s ease;
+    }
+    
+    .btn.gold {
+      background: linear-gradient(90deg, var(--gold1), var(--gold2));
+      color: #111;
+    }
+    
+    .btn.gold:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(201, 152, 42, 0.3);
+    }
+    
+    .register-btn {
+      background: linear-gradient(90deg, var(--gold1), var(--gold2));
+      color: #111;
+      padding: 8px 16px;
+      border-radius: 6px;
+      border: none;
+      font-weight: 600;
+      cursor: pointer;
+      font-size: 13px;
+    }
+    
+    /* Form title */
+    h2 {
+      font-family: "Playfair Display", serif;
+      font-size: 24px;
+      margin-bottom: 25px;
+      text-align: center;
+      color: var(--black);
+    }
+    
+    /* Form labels */
+    label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 600;
+      color: var(--black);
+      font-size: 14px;
+    }
+    
+    /* Input fields matching your index */
+    input {
+      width: 100%;
+      padding: 12px 15px;
+      margin-bottom: 20px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      font-size: 15px;
+      font-family: "Poppins", sans-serif;
+      transition: all 0.3s ease;
+      background: #fff;
+    }
+    
+    input:focus {
+      outline: none;
+      border-color: var(--gold1);
+      box-shadow: 0 0 0 3px rgba(201, 152, 42, 0.1);
+    }
+    
+    /* Login button */
+    .login-btn {
+      width: 100%;
+      padding: 14px;
+      background: linear-gradient(90deg, var(--gold1), var(--gold2));
+      color: #111;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: 10px;
+      transition: all 0.3s ease;
+      font-family: "Poppins", sans-serif;
+    }
+    
+    .login-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 15px rgba(201, 152, 42, 0.25);
+    }
+    
+    /* Footer matching your index */
+    .footer {
+      text-align: center;
+      margin-top: 30px;
+      padding-top: 20px;
+      border-top: 1px solid #eee;
+      color: var(--muted);
+      font-size: 12px;
+    }
+    
+    /* Loading overlay matching your index theme */
     .loading-overlay {
       display: none;
       position: fixed;
-      top: 0; left: 0;
-      width: 100%; height: 100%;
-      background: rgba(255, 255, 255, 0.9);
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(255, 255, 255, 0.95);
       z-index: 1000;
       justify-content: center;
       align-items: center;
       flex-direction: column;
+      backdrop-filter: blur(4px);
     }
+    
     .spinner {
       border: 6px solid #f3f3f3;
-      border-top: 6px solid #007bff;
+      border-top: 6px solid var(--gold1);
       border-radius: 50%;
-      width: 50px; height: 50px;
+      width: 50px;
+      height: 50px;
       animation: spin 1s linear infinite;
     }
+    
     @keyframes spin {
       0% { transform: rotate(0deg); }
       100% { transform: rotate(360deg); }
     }
+    
     .loading-text {
-      margin-top: 15px;
+      margin-top: 20px;
       font-size: 16px;
-      color: #333;
+      color: var(--black);
+      font-weight: 600;
+      font-family: "Poppins", sans-serif;
+    }
+    
+    /* Background image decoration - subtle like your index */
+    .login-container::before {
+      content: '';
+      position: absolute;
+      top: -10px;
+      left: -10px;
+      right: -10px;
+      bottom: -10px;
+      background: linear-gradient(45deg, var(--gold1), var(--gold2), transparent);
+      z-index: -1;
+      border-radius: 16px;
+      opacity: 0.1;
+    }
+    
+    /* Responsive design */
+    @media (max-width: 480px) {
+      .login-container {
+        padding: 30px 20px;
+        margin: 10px;
+      }
+      
+      h2 {
+        font-size: 20px;
+      }
+      
+      .register-section {
+        flex-direction: column;
+        gap: 10px;
+        text-align: center;
+      }
+      
+      .logo {
+        max-height: 50px;
+      }
+    }
+    
+    /* Link to home page */
+    .home-link {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      text-decoration: none;
+      color: var(--black);
+      font-weight: 600;
+      font-size: 14px;
+      transition: all 0.3s ease;
+    }
+    
+    .home-link:hover {
+      color: var(--gold1);
+    }
+    
+    .home-link::before {
+      content: '←';
+      font-size: 16px;
+    }
+    
+    /* Forgot password link */
+    .forgot-password {
+      text-align: right;
+      margin-top: -10px;
+      margin-bottom: 20px;
+    }
+    
+    .forgot-password a {
+      color: var(--gold1);
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 600;
+    }
+    
+    .forgot-password a:hover {
+      text-decoration: underline;
     }
   </style>
 </head>
 <body>
+  <!-- Link back to home page -->
+  <a href="index.html" class="home-link">Back to Home</a>
+  
   <div class="login-container">
-    <!-- Logo -->
-    <img src="https://i.supaimg.com/c3856786-edd2-402a-9a14-32d60a5a0118.png" alt="Logo" class="logo">
+    <!-- Logo - matching your index -->
+    <img src="https://i.supaimg.com/081d8bfa-a08a-4aa5-a4a7-175608eee7b9.png" alt="My Harvestive Limited Logo" class="logo">
 
-    <!-- New to the platform -->
+    <!-- New to the platform - styled like your index -->
     <div class="register-section">
       <span>Don't have an account?</span>
       <button onclick="window.location.href='register.html'" class="register-btn">Register</button>
@@ -55,13 +319,18 @@
 
     <label>Password</label>
     <input id="loginPassword" type="password" placeholder="Enter your password" required>
+    
+    <!-- Forgot password link -->
+    <div class="forgot-password">
+      <a href="forgot-password.html">Forgot Password?</a>
+    </div>
 
     <button onclick="login()" class="login-btn">Login</button>
 
-    <p class="footer">Copyright 2025 My Investment App all rights reserved.</p>
+    <p class="footer">Copyright 2023 My Harvestive Limited all rights reserved.</p>
   </div>
 
-  <!-- Loading Overlay -->
+  <!-- Loading Overlay - styled to match your index -->
   <div id="loadingOverlay" class="loading-overlay">
     <div class="spinner"></div>
     <div class="loading-text">loading... please wait</div>
@@ -74,6 +343,13 @@
 
       if (!email || !password) {
         alert("⚠️ Please fill in all fields.");
+        return;
+      }
+
+      // Validate email format
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        alert("⚠️ Please enter a valid email address.");
         return;
       }
 
@@ -92,18 +368,37 @@
 
         if (res.ok && data.token) {
           localStorage.setItem("token", data.token);
-          window.location.href = "dashboard.html"; // ✅ redirect after login
+          localStorage.setItem("userEmail", email);
+          
+          // Show success message before redirect
+          alert("✅ Login successful! Redirecting to dashboard...");
+          window.location.href = "dashboard.html";
         } else {
-          alert(data.error || "Login failed.");
+          alert(data.error || "Login failed. Please check your credentials.");
         }
       } catch (err) {
-        console.error(err);
-        alert("❌ Error connecting to server.");
+        console.error("Login error:", err);
+        alert("❌ Error connecting to server. Please try again.");
       } finally {
         // Hide overlay after response
         overlay.style.display = "none";
       }
     }
+    
+    // Allow login with Enter key
+    document.addEventListener('DOMContentLoaded', function() {
+      const inputs = document.querySelectorAll('input');
+      inputs.forEach(input => {
+        input.addEventListener('keypress', function(e) {
+          if (e.key === 'Enter') {
+            login();
+          }
+        });
+      });
+      
+      // Auto-focus email field
+      document.getElementById('loginEmail').focus();
+    });
   </script>
 </body>
 </html>

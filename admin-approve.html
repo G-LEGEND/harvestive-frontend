@@ -14,31 +14,49 @@
     h2 {
       color: #d4af37;
       margin-bottom: 10px;
+      padding-bottom: 5px;
+      border-bottom: 2px solid #d4af37;
     }
     .section {
       margin-bottom: 30px;
     }
     .deposit {
       border: 1px solid #d4af37;
-      padding: 10px;
-      margin-bottom: 10px;
+      padding: 15px;
+      margin-bottom: 15px;
       border-radius: 8px;
       background: #1c1c1c;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+    @media (max-width: 768px) {
+      .deposit {
+        grid-template-columns: 1fr;
+      }
     }
     .deposit p {
-      margin: 2px 0;
+      margin: 4px 0;
       font-size: 14px;
     }
+    .deposit .user-info {
+      grid-column: 1 / -1;
+      background: rgba(212, 175, 55, 0.1);
+      padding: 8px;
+      border-radius: 6px;
+      margin-bottom: 10px;
+    }
     .deposit img {
-      max-width: 120px;
+      max-width: 180px;
       display: block;
-      margin: 6px 0;
+      margin: 10px 0;
       border: 1px solid #444;
       border-radius: 6px;
+      grid-column: 1 / -1;
     }
     button {
       margin-top: 5px;
-      padding: 6px 12px;
+      padding: 8px 16px;
       border: none;
       background: #d4af37;
       color: #111;
@@ -46,20 +64,122 @@
       border-radius: 6px;
       font-weight: bold;
       font-size: 14px;
+      transition: all 0.3s ease;
     }
     button:hover {
       background: #b59428;
+      transform: translateY(-2px);
+    }
+    .status-pending {
+      color: #ffcc00;
+      font-weight: bold;
+    }
+    .status-approved {
+      color: #4CAF50;
+      font-weight: bold;
+    }
+    .timestamp {
+      color: #aaa;
+      font-size: 12px;
+      font-style: italic;
+    }
+    .no-data {
+      color: #888;
+      font-style: italic;
+      text-align: center;
+      padding: 20px;
+      border: 1px dashed #444;
+      border-radius: 8px;
+    }
+    .header-actions {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+    .refresh-btn {
+      background: #333;
+      color: #d4af37;
+      border: 1px solid #d4af37;
+    }
+    .refresh-btn:hover {
+      background: #444;
+    }
+    .logout-btn {
+      background: #c62828;
+      color: white;
+    }
+    .logout-btn:hover {
+      background: #d32f2f;
+    }
+    .deposit-id {
+      font-size: 12px;
+      color: #888;
+      font-family: monospace;
     }
   </style>
 </head>
 <body>
-  <h2>Pending Deposits</h2>
-  <div id="pending" class="section"></div>
+  <div class="header-actions">
+    <h2>Admin Deposit Approval</h2>
+    <div>
+      <button class="refresh-btn" onclick="loadDeposits()">🔄 Refresh</button>
+      <button class="logout-btn" onclick="logout()">🚪 Logout</button>
+    </div>
+  </div>
 
-  <h2>Processed Deposits</h2>
-  <div id="processed" class="section"></div>
+  <h2>⏳ Pending Deposits</h2>
+  <div id="pending" class="section">
+    <div class="no-data">Loading pending deposits...</div>
+  </div>
+
+  <h2>✅ Processed Deposits</h2>
+  <div id="processed" class="section">
+    <div class="no-data">Loading processed deposits...</div>
+  </div>
 
   <script>
+    let allUsersCache = {};
+
+    async function loadUsers() {
+      try {
+        const token = localStorage.getItem("adminToken");
+        const res = await fetch("https://harvestive-co-backend.onrender.com/admin/users", {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        if (res.ok) {
+          const users = await res.json();
+          // Create a cache for quick user lookup
+          users.forEach(user => {
+            allUsersCache[user._id] = user;
+          });
+        }
+      } catch (err) {
+        console.error("Error loading users:", err);
+      }
+    }
+
+    function formatDate(dateString) {
+      const date = new Date(dateString);
+      return date.toLocaleDateString() + ' ' + date.toLocaleTimeString();
+    }
+
+    function getUserInfo(userId) {
+      const user = allUsersCache[userId];
+      if (!user) {
+        return {
+          fullName: "Unknown User",
+          email: "N/A",
+          username: "N/A"
+        };
+      }
+      return {
+        fullName: `${user.firstName || ''} ${user.lastName || ''}`.trim() || user.username || "No Name",
+        email: user.email || "N/A",
+        username: user.username || "N/A"
+      };
+    }
+
     async function loadDeposits() {
       const token = localStorage.getItem("adminToken");
       if (!token) {
@@ -68,7 +188,14 @@
         return;
       }
 
+      // Show loading states
+      document.getElementById("pending").innerHTML = '<div class="no-data">Loading pending deposits...</div>';
+      document.getElementById("processed").innerHTML = '<div class="no-data">Loading processed deposits...</div>';
+
       try {
+        // Load users first (if you add this endpoint)
+        await loadUsers();
+        
         const res = await fetch("https://harvestive-co-backend.onrender.com/admin/deposits", {
           headers: { Authorization: `Bearer ${token}` }
         });
@@ -79,52 +206,146 @@
         pending.innerHTML = "";
         processed.innerHTML = "";
 
-        // newest first
-        data.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+        // Separate pending and processed
+        const pendingDeposits = data.filter(dep => dep.status === "pending");
+        const processedDeposits = data.filter(dep => dep.status !== "pending");
 
-        data.forEach(dep => {
-          const div = document.createElement("div");
-          div.className = "deposit";
-          div.innerHTML = `
-            <p><b>User:</b> ${dep.userId}</p>
-            <p><b>Amount:</b> $${dep.amount}</p>
-            <p><b>Method:</b> ${dep.method}</p>
-            <p><b>Status:</b> ${dep.status}</p>
-          `;
+        // Sort newest first
+        pendingDeposits.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+        processedDeposits.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
-          if (dep.screenshot) {
-            const img = document.createElement("img");
-            img.src = "data:image/png;base64," + dep.screenshot;
-            div.appendChild(img);
-          }
+        // Display pending deposits
+        if (pendingDeposits.length === 0) {
+          pending.innerHTML = '<div class="no-data">No pending deposits</div>';
+        } else {
+          pendingDeposits.forEach(dep => {
+            const userInfo = getUserInfo(dep.userId);
+            const div = document.createElement("div");
+            div.className = "deposit";
+            div.innerHTML = `
+              <div class="user-info">
+                <p><b>👤 User:</b> ${userInfo.fullName}</p>
+                <p><b>📧 Email:</b> ${userInfo.email}</p>
+                <p><b>👤 Username:</b> ${userInfo.username}</p>
+                <p class="deposit-id"><b>ID:</b> ${dep._id}</p>
+              </div>
+              <div>
+                <p><b>💰 Amount:</b> $${dep.amount.toFixed(2)}</p>
+                <p><b>📊 Method:</b> ${dep.method}</p>
+                <p><b>🕒 Date:</b> ${formatDate(dep.createdAt)}</p>
+              </div>
+              <div>
+                <p><b>📈 Status:</b> <span class="status-pending">${dep.status}</span></p>
+                ${dep.screenshot ? '<p><b>🖼️ Screenshot:</b> Available</p>' : '<p><b>🖼️ Screenshot:</b> Not provided</p>'}
+                <p class="timestamp">Submitted: ${formatDate(dep.createdAt)}</p>
+              </div>
+            `;
 
-          if (dep.status === "pending") {
-            const btn = document.createElement("button");
-            btn.textContent = "Approve";
-            btn.onclick = async () => {
-              try {
-                const approve = await fetch(`https://harvestive-co-backend.onrender.com/admin/deposit/${dep._id}/approve`, {
-                  method: "POST",
-                  headers: { Authorization: `Bearer ${token}` }
-                });
-                const result = await approve.json();
-                alert(result.message || result.error);
-                loadDeposits(); // refresh
-              } catch (err) {
-                alert("Error approving deposit");
+            if (dep.screenshot) {
+              const imgContainer = document.createElement("div");
+              imgContainer.style.gridColumn = "1 / -1";
+              imgContainer.innerHTML = `
+                <p><b>Payment Screenshot:</b></p>
+                <img src="data:image/png;base64,${dep.screenshot}" 
+                     alt="Payment Screenshot" 
+                     onclick="this.style.maxWidth=this.style.maxWidth==='100%'?'180px':'100%'"
+                     style="cursor: pointer; max-width: 180px; transition: max-width 0.3s;">
+                <p style="font-size: 12px; color: #888;">Click image to enlarge/shrink</p>
+              `;
+              div.appendChild(imgContainer);
+            }
+
+            const btnContainer = document.createElement("div");
+            btnContainer.style.gridColumn = "1 / -1";
+            btnContainer.style.display = "flex";
+            btnContainer.style.gap = "10px";
+            btnContainer.style.justifyContent = "flex-end";
+            btnContainer.style.marginTop = "10px";
+
+            const approveBtn = document.createElement("button");
+            approveBtn.textContent = "✅ Approve Deposit";
+            approveBtn.onclick = async () => {
+              if (confirm(`Approve $${dep.amount.toFixed(2)} deposit from ${userInfo.fullName}?`)) {
+                try {
+                  const approve = await fetch(`https://harvestive-co-backend.onrender.com/admin/deposit/${dep._id}/approve`, {
+                    method: "POST",
+                    headers: { Authorization: `Bearer ${token}` }
+                  });
+                  const result = await approve.json();
+                  alert(result.message || result.error);
+                  loadDeposits(); // refresh
+                } catch (err) {
+                  alert("Error approving deposit");
+                }
               }
             };
-            div.appendChild(btn);
+            btnContainer.appendChild(approveBtn);
+
+            div.appendChild(btnContainer);
             pending.appendChild(div);
-          } else {
+          });
+        }
+
+        // Display processed deposits
+        if (processedDeposits.length === 0) {
+          processed.innerHTML = '<div class="no-data">No processed deposits</div>';
+        } else {
+          processedDeposits.forEach(dep => {
+            const userInfo = getUserInfo(dep.userId);
+            const div = document.createElement("div");
+            div.className = "deposit";
+            div.innerHTML = `
+              <div class="user-info">
+                <p><b>👤 User:</b> ${userInfo.fullName}</p>
+                <p><b>📧 Email:</b> ${userInfo.email}</p>
+                <p><b>👤 Username:</b> ${userInfo.username}</p>
+                <p class="deposit-id"><b>ID:</b> ${dep._id}</p>
+              </div>
+              <div>
+                <p><b>💰 Amount:</b> $${dep.amount.toFixed(2)}</p>
+                <p><b>📊 Method:</b> ${dep.method}</p>
+                <p><b>🕒 Date:</b> ${formatDate(dep.createdAt)}</p>
+              </div>
+              <div>
+                <p><b>📈 Status:</b> <span class="status-${dep.status === 'approved' ? 'approved' : 'pending'}">${dep.status}</span></p>
+                <p><b>🕒 Processed:</b> ${dep.updatedAt ? formatDate(dep.updatedAt) : 'N/A'}</p>
+                ${dep.screenshot ? '<p><b>🖼️ Screenshot:</b> Available</p>' : '<p><b>🖼️ Screenshot:</b> Not provided</p>'}
+              </div>
+            `;
+
+            if (dep.screenshot) {
+              const imgContainer = document.createElement("div");
+              imgContainer.style.gridColumn = "1 / -1";
+              imgContainer.innerHTML = `
+                <p><b>Payment Screenshot:</b></p>
+                <img src="data:image/png;base64,${dep.screenshot}" 
+                     alt="Payment Screenshot" 
+                     onclick="this.style.maxWidth=this.style.maxWidth==='100%'?'180px':'100%'"
+                     style="cursor: pointer; max-width: 180px; transition: max-width 0.3s;">
+                <p style="font-size: 12px; color: #888;">Click image to enlarge/shrink</p>
+              `;
+              div.appendChild(imgContainer);
+            }
+
             processed.appendChild(div);
-          }
-        });
+          });
+        }
+
       } catch (err) {
         console.error(err);
+        document.getElementById("pending").innerHTML = '<div class="no-data">Error loading deposits</div>';
+        document.getElementById("processed").innerHTML = '<div class="no-data">Error loading deposits</div>';
         alert("Error loading deposits");
       }
     }
+
+    function logout() {
+      localStorage.removeItem("adminToken");
+      window.location.href = "admin.html";
+    }
+
+    // Auto-refresh every 30 seconds
+    setInterval(loadDeposits, 30000);
 
     window.onload = loadDeposits;
   </script>
