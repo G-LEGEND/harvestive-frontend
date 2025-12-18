@@ -57,6 +57,10 @@
       margin-top: 4px;
     }
 
+    .note.error {
+      color: #e74c3c;
+    }
+
     button {
       background: #d4af37;
       color: white;
@@ -68,6 +72,11 @@
 
     button:hover {
       background: #b59428;
+    }
+
+    button:disabled {
+      background: #cccccc;
+      cursor: not-allowed;
     }
 
     .modal {
@@ -114,12 +123,15 @@
       padding: 8px 10px;
       border-radius: 6px;
       border: 1px solid #ddd;
+      margin-bottom: 10px;
     }
 
     .wallet-text {
       word-break: break-all;
       font-size: 14px;
       color: #333;
+      flex: 1;
+      margin-right: 10px;
     }
 
     .copy-btn {
@@ -131,6 +143,7 @@
       cursor: pointer;
       font-size: 13px;
       transition: 0.3s;
+      white-space: nowrap;
     }
 
     .copy-btn:hover {
@@ -160,71 +173,143 @@
       color: #d4af37;
       font-weight: bold;
     }
+
+    .loading {
+      text-align: center;
+      padding: 20px;
+      color: #666;
+    }
+
+    .error-message {
+      background: #fee;
+      color: #c00;
+      padding: 10px;
+      border-radius: 6px;
+      margin: 10px 0;
+      font-size: 14px;
+      display: none;
+    }
+
+    .method-info {
+      margin: 15px 0;
+      padding: 10px;
+      background: #f9f9f9;
+      border-radius: 8px;
+      border: 1px solid #eee;
+    }
   </style>
 </head>
 <body>
   <div class="deposit-container">
     <h2>Deposit</h2>
 
+    <div id="errorMessage" class="error-message"></div>
+
     <form id="depositForm">
       <label>Amount (USD)</label>
-      <input type="number" id="depositAmount" required placeholder="Enter amount">
+      <input type="number" id="depositAmount" required placeholder="Enter amount" min="100" step="any">
       <div class="note">Minimum deposit is 100 USD</div>
 
       <label>Select Method</label>
       <select id="depositMethod" required onchange="updateMethodDetails()">
-        <option value="">Loading...</option>
+        <option value="">Select a payment method</option>
       </select>
+      <div id="methodLoading" class="loading" style="display: none;">Loading methods...</div>
 
       <div id="methodDetails" style="margin:15px 0; display:none;">
+        <div class="method-info">
+          <p><b>Payment Instructions:</b></p>
+          <p style="font-size: 13px; color: #666; margin: 5px 0;">
+            1. Send the exact amount to the address below<br>
+            2. Take a screenshot of the transaction<br>
+            3. Upload the screenshot as proof
+          </p>
+        </div>
+        
         <p><b>Wallet Address:</b></p>
         <div class="wallet-box">
           <span id="walletAddress" class="wallet-text"></span>
           <button type="button" class="copy-btn" onclick="copyAddress()">Copy</button>
         </div>
-        <img id="walletQR" class="qr-img" alt="QR Code">
+        
+        <div id="qrContainer">
+          <p><b>QR Code:</b></p>
+          <img id="walletQR" class="qr-img" alt="QR Code" onerror="this.style.display='none'">
+          <div id="qrError" style="color: #e74c3c; font-size: 12px; display: none;">QR code not available</div>
+        </div>
       </div>
 
-      <label>Upload Payment Proof</label>
-      <input type="file" id="screenshot" accept="image/*" required>
+      <label>Upload Payment Proof (Screenshot)</label>
+      <input type="file" id="screenshot" accept="image/*,.png,.jpg,.jpeg,.webp" required>
+      <div class="note">Upload a clear screenshot of your payment transaction</div>
 
-      <button type="button" onclick="openConfirmModal()">I Have Paid</button>
+      <button type="button" id="submitBtn" onclick="openConfirmModal()">I Have Paid</button>
     </form>
   </div>
 
   <!-- Confirmation Modal -->
   <div id="confirmModal" class="modal">
     <div class="modal-content">
-      <h3>Are you sure you have paid?</h3>
-      <button onclick="submitDeposit()">Yes</button>
-      <button onclick="closeConfirmModal()">No</button>
+      <h3>Confirm Payment</h3>
+      <p>Are you sure you have sent the payment?</p>
+      <p style="font-size: 14px; color: #666; margin: 10px 0;">
+        Please ensure you have:<br>
+        1. Sent the exact amount<br>
+        2. Taken a screenshot<br>
+        3. Double-checked the wallet address
+      </p>
+      <div>
+        <button onclick="submitDeposit()" id="confirmYesBtn">Yes, I Have Paid</button>
+        <button onclick="closeConfirmModal()" style="background: #ccc; color: #333;">No, Cancel</button>
+      </div>
     </div>
   </div>
 
   <!-- Bottom Navigation -->
   <div class="bottom-nav">
     <a href="deposit.html" class="active"><i class="fas fa-wallet"></i><br>Deposit</a>
-    <a href="invest.html"><i class="fas fa-piggy-bank"></i><br>My invest</a>
+    <a href="invest.html"><i class="fas fa-piggy-bank"></i><br>Invest</a>
     <a href="dashboard.html"><i class="fas fa-home"></i><br>Home</a>
     <a href="withdraw.html"><i class="fas fa-money-bill"></i><br>Withdraw</a>
     <a href="transfer.html"><i class="fas fa-exchange-alt"></i><br>Transfer</a>
   </div>
 
   <script>
+    const API_BASE = 'https://harvestive-co-backend.onrender.com';
     let depositMethods = [];
+    let isSubmitting = false;
+
+    function showError(message) {
+      const errorDiv = document.getElementById('errorMessage');
+      errorDiv.textContent = message;
+      errorDiv.style.display = 'block';
+      setTimeout(() => {
+        errorDiv.style.display = 'none';
+      }, 5000);
+    }
 
     async function loadDepositMethods() {
+      const select = document.getElementById('depositMethod');
+      const loading = document.getElementById('methodLoading');
+      
+      select.disabled = true;
+      loading.style.display = 'block';
+      
       try {
-        const res = await fetch("https://harvestive-co-backend.onrender.com/user/deposit-methods");
+        const res = await fetch(`${API_BASE}/user/deposit-methods`);
+        
+        if (!res.ok) {
+          throw new Error(`Failed to load methods: ${res.status} ${res.statusText}`);
+        }
+        
         const methods = await res.json();
         depositMethods = methods;
 
-        const select = document.getElementById("depositMethod");
-        select.innerHTML = "";
-
-        if (!methods.length) {
-          select.innerHTML = "<option value=''>No methods available</option>";
-          document.getElementById("methodDetails").style.display = "none";
+        select.innerHTML = '<option value="">Select a payment method</option>';
+        
+        if (!methods || methods.length === 0) {
+          select.innerHTML += '<option value="" disabled>No payment methods available</option>';
+          showError('No deposit methods available. Please contact support.');
           return;
         }
 
@@ -235,93 +320,208 @@
           select.appendChild(opt);
         });
 
-        updateMethodDetails();
+        select.disabled = false;
+        
+        // Auto-select first method if available
+        if (methods.length > 0) {
+          select.value = methods[0]._id;
+          updateMethodDetails();
+        }
+        
       } catch (err) {
-        console.error(err);
-        alert("Error loading deposit methods.");
+        console.error('Error loading deposit methods:', err);
+        select.innerHTML = '<option value="" disabled>Error loading methods</option>';
+        showError('Error loading payment methods. Please try again later.');
+      } finally {
+        loading.style.display = 'none';
       }
     }
 
     function updateMethodDetails() {
-      const id = document.getElementById("depositMethod").value;
+      const id = document.getElementById('depositMethod').value;
       const method = depositMethods.find(m => m._id === id);
+      const detailsDiv = document.getElementById('methodDetails');
+      const qrImg = document.getElementById('walletQR');
+      const qrError = document.getElementById('qrError');
 
       if (method) {
-        document.getElementById("walletAddress").innerText = method.address;
-        document.getElementById("walletQR").src = method.qr;
-        document.getElementById("methodDetails").style.display = "block";
+        document.getElementById('walletAddress').innerText = method.address || 'Address not available';
+        
+        // Handle QR code
+        if (method.qr) {
+          qrImg.src = method.qr;
+          qrImg.style.display = 'block';
+          qrError.style.display = 'none';
+        } else {
+          qrImg.style.display = 'none';
+          qrError.style.display = 'block';
+        }
+        
+        detailsDiv.style.display = 'block';
       } else {
-        document.getElementById("methodDetails").style.display = "none";
+        detailsDiv.style.display = 'none';
       }
     }
 
     function copyAddress() {
-      const address = document.getElementById("walletAddress").innerText;
-      if (!address) return;
+      const address = document.getElementById('walletAddress').innerText;
+      if (!address || address === 'Address not available') {
+        showError('No address to copy');
+        return;
+      }
+      
       navigator.clipboard.writeText(address).then(() => {
-        alert("Wallet address copied!");
+        alert('✅ Wallet address copied to clipboard!');
+      }).catch(err => {
+        console.error('Copy failed:', err);
+        showError('Failed to copy address');
       });
     }
 
     function openConfirmModal() {
-      document.getElementById("confirmModal").style.display = "flex";
+      const amount = parseFloat(document.getElementById('depositAmount').value);
+      const methodId = document.getElementById('depositMethod').value;
+      const screenshot = document.getElementById('screenshot').files[0];
+
+      // Validation
+      if (!amount || isNaN(amount)) {
+        showError('Please enter a valid amount');
+        return;
+      }
+      
+      if (amount < 100) {
+        showError('Minimum deposit is 100 USD');
+        return;
+      }
+      
+      if (!methodId) {
+        showError('Please select a payment method');
+        return;
+      }
+      
+      if (!screenshot) {
+        showError('Please upload payment proof screenshot');
+        return;
+      }
+
+      // Check file size (max 5MB)
+      if (screenshot.size > 5 * 1024 * 1024) {
+        showError('File too large. Maximum size is 5MB');
+        return;
+      }
+
+      // Check file type
+      const validTypes = ['image/jpeg', 'image/png', 'image/jpg', 'image/webp'];
+      if (!validTypes.includes(screenshot.type)) {
+        showError('Please upload a valid image (JPEG, PNG, or WebP)');
+        return;
+      }
+
+      const token = localStorage.getItem('token');
+      if (!token) {
+        showError('You must be logged in');
+        setTimeout(() => window.location.href = 'index.html', 1000);
+        return;
+      }
+
+      document.getElementById('confirmModal').style.display = 'flex';
     }
 
     function closeConfirmModal() {
-      document.getElementById("confirmModal").style.display = "none";
+      document.getElementById('confirmModal').style.display = 'none';
     }
 
     async function submitDeposit() {
-      const amount = parseFloat(document.getElementById("depositAmount").value);
-      const methodId = document.getElementById("depositMethod").value;
-      const screenshot = document.getElementById("screenshot").files[0];
-
-      if (!amount || !methodId || !screenshot) {
-        alert("Please fill all fields and upload proof.");
-        return;
-      }
-
-      // ✅ enforce minimum 100
-      if (amount < 100) {
-        alert("Minimum deposit is 100 USD");
-        return;
-      }
-
-      const token = localStorage.getItem("token");
+      if (isSubmitting) return;
+      
+      const amount = parseFloat(document.getElementById('depositAmount').value);
+      const methodId = document.getElementById('depositMethod').value;
+      const screenshot = document.getElementById('screenshot').files[0];
+      const token = localStorage.getItem('token');
+      
       if (!token) {
-        alert("You must be logged in.");
-        window.location.href = "index.html";
+        showError('Session expired. Please login again.');
+        setTimeout(() => window.location.href = 'index.html', 1000);
         return;
       }
+
+      isSubmitting = true;
+      const submitBtn = document.getElementById('submitBtn');
+      const confirmYesBtn = document.getElementById('confirmYesBtn');
+      const originalSubmitText = submitBtn.textContent;
+      const originalConfirmText = confirmYesBtn.textContent;
+      
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Processing...';
+      confirmYesBtn.disabled = true;
+      confirmYesBtn.textContent = 'Processing...';
 
       const formData = new FormData();
-      formData.append("amount", amount);
-      formData.append("method", methodId);
-      formData.append("screenshot", screenshot);
+      formData.append('amount', amount);
+      formData.append('method', methodId);
+      formData.append('screenshot', screenshot);
 
       try {
-        const res = await fetch("https://harvestive-co-backend.onrender.com", {
-          method: "POST",
-          headers: { Authorization: `Bearer ${token}` },
+        const res = await fetch(`${API_BASE}/deposit`, {
+          method: 'POST',
+          headers: { 
+            'Authorization': `Bearer ${token}`
+            // Note: Don't set Content-Type for FormData, browser sets it automatically with boundary
+          },
           body: formData
         });
 
         const data = await res.json();
+        
         if (res.ok) {
-          alert(data.message || "Deposit submitted! Waiting for admin approval.");
-          window.location.href = "dashboard.html";
+          alert(`✅ ${data.message || 'Deposit submitted successfully!'}\n\nStatus: Pending approval\nAmount: $${amount}\n\nPlease wait for admin approval.`);
+          closeConfirmModal();
+          setTimeout(() => {
+            window.location.href = 'dashboard.html';
+          }, 1000);
         } else {
-          alert(data.error || "Deposit failed.");
+          throw new Error(data.error || `Deposit failed: ${res.status}`);
         }
+        
       } catch (err) {
-        console.error(err);
-        alert("Error submitting deposit.");
+        console.error('Deposit error:', err);
+        showError(err.message || 'Error submitting deposit. Please try again.');
+        closeConfirmModal();
+      } finally {
+        isSubmitting = false;
+        submitBtn.disabled = false;
+        submitBtn.textContent = originalSubmitText;
+        confirmYesBtn.disabled = false;
+        confirmYesBtn.textContent = originalConfirmText;
       }
-
-      closeConfirmModal();
     }
 
+    // Load methods on page load
     window.onload = loadDepositMethods;
+
+    // Close modal when clicking outside
+    document.getElementById('confirmModal').addEventListener('click', function(e) {
+      if (e.target === this) {
+        closeConfirmModal();
+      }
+    });
+
+    // Close modal with Escape key
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') {
+        closeConfirmModal();
+      }
+    });
+
+    // Validate amount input
+    document.getElementById('depositAmount').addEventListener('input', function() {
+      const amount = parseFloat(this.value);
+      if (amount < 100) {
+        this.style.borderColor = '#e74c3c';
+      } else {
+        this.style.borderColor = '#d4af37';
+      }
+    });
   </script>
 </body>
 </html>
