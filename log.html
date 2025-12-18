@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Transaction Logs & Investment History</title>
+  <title>Transaction Logs & Investment Progress</title>
   <link rel="stylesheet" href="style.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <style>
@@ -29,6 +29,7 @@
       background: #f8f9fa;
       border-radius: 10px;
       padding: 5px;
+      overflow-x: auto;
     }
     
     .tab-btn {
@@ -40,12 +41,21 @@
       font-weight: 600;
       border-radius: 8px;
       transition: all 0.3s ease;
+      font-size: 12px;
+      white-space: nowrap;
+      min-width: 80px;
     }
     
     .tab-btn.active { 
       background: linear-gradient(to right, var(--accent-start), var(--accent-end)); 
       color: #000;
       box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    
+    .tab-btn i {
+      font-size: 16px;
+      margin-bottom: 4px;
+      display: block;
     }
     
     .log-list { 
@@ -68,7 +78,7 @@
     .status-active { color: var(--info); font-weight: 600; }
     .status-completed { color: var(--success); font-weight: 600; }
 
-    /* Investment Status Section */
+    /* Investment Progress Card Styles */
     .investment-card {
       background: white;
       border-radius: 10px;
@@ -222,9 +232,7 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin: 20px 0 10px 0;
-      border-bottom: 2px solid #eee;
-      padding-bottom: 8px;
+      margin: 0 0 15px 0;
     }
 
     .section-title {
@@ -260,25 +268,64 @@
     .type-deposit { background: #e8f4fd; color: var(--info); }
     .type-withdraw { background: #fef5e7; color: var(--warning); }
     .type-invest { background: #e7f7ef; color: var(--success); }
+    
+    .amount-badge {
+      background: linear-gradient(to right, var(--accent-start), var(--accent-end));
+      color: #111;
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-weight: 700;
+      font-size: 14px;
+    }
+    
+    .profit-badge {
+      background: #e7f7ef;
+      color: var(--success);
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-weight: 600;
+      font-size: 13px;
+    }
+    
+    .capital-returned {
+      background: #e7f7ef;
+      color: var(--success);
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+    
+    .capital-pending {
+      background: #fef5e7;
+      color: var(--warning);
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+    
+    .day-counter {
+      background: #e8f4fd;
+      color: var(--info);
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 600;
+    }
   </style>
 </head>
 <body>
   <div class="logs-container">
     <button class="back-btn" onclick="window.location.href='dashboard.html'">⬅ Back</button>
-    <h2>📋 Transaction & Investment History</h2>
+    <h2>📋 Transaction & Investment Logs</h2>
 
-    <!-- Investment Status Section -->
-    <div class="section-header">
-      <div class="section-title">📈 My Investment Progress</div>
-      <button class="refresh-btn" onclick="loadInvestmentStatus()">
-        <i class="fas fa-sync-alt"></i> Refresh
-      </button>
-    </div>
-    <div id="investmentStatus"></div>
-
-    <!-- Tabs for Transactions -->
+    <!-- Tabs -->
     <div class="tabs">
-      <button class="tab-btn active" onclick="showTab('deposits')">
+      <button class="tab-btn active" onclick="showTab('investment-progress')">
+        <i class="fas fa-chart-line"></i><br>Progress
+      </button>
+      <button class="tab-btn" onclick="showTab('deposits')">
         <i class="fas fa-wallet"></i><br>Deposits
       </button>
       <button class="tab-btn" onclick="showTab('withdrawals')">
@@ -295,8 +342,19 @@
       <p>Loading...</p>
     </div>
 
+    <!-- Investment Progress Section -->
+    <div id="investment-progress">
+      <div class="section-header">
+        <div class="section-title">📊 Active Investments</div>
+        <button class="refresh-btn" onclick="loadInvestmentProgress()">
+          <i class="fas fa-sync-alt"></i> Refresh
+        </button>
+      </div>
+      <div id="investmentProgressContent"></div>
+    </div>
+
     <!-- Deposit Logs -->
-    <ul id="deposits" class="log-list"></ul>
+    <ul id="deposits" class="log-list" style="display:none;"></ul>
 
     <!-- Withdraw Logs -->
     <ul id="withdrawals" class="log-list" style="display:none;"></ul>
@@ -309,7 +367,7 @@
     <a href="deposit.html"><i class="fas fa-wallet"></i><br>Deposit</a>
     <a href="invest.html"><i class="fas fa-piggy-bank"></i><br>Invest</a>
     <a href="dashboard.html"><i class="fas fa-home"></i><br>Home</a>
-    <a href="withdraw.html"><i class="fas fa-money-bill"></i><br>Withdraw</a>
+    <a href="withdraw.html"><i class="fas fa-money-bank"></i><br>Withdraw</a>
     <a href="transfer.html"><i class="fas fa-exchange-alt"></i><br>Transfer</a>
   </div>
 
@@ -318,9 +376,23 @@
       ? 'http://localhost:3000'
       : 'https://harvestive-co-backend.onrender.com';
 
+    let currentTab = 'investment-progress';
+
     function showTab(tab) {
+      currentTab = tab;
+      
+      // Hide all content
+      document.getElementById('investment-progress').style.display = 'none';
       document.querySelectorAll(".log-list").forEach(list => list.style.display = "none");
-      document.getElementById(tab).style.display = "block";
+      
+      // Show selected content
+      if (tab === 'investment-progress') {
+        document.getElementById('investment-progress').style.display = 'block';
+      } else {
+        document.getElementById(tab).style.display = "block";
+      }
+      
+      // Update active tab button
       document.querySelectorAll(".tab-btn").forEach(btn => btn.classList.remove("active"));
       event.target.classList.add("active");
 
@@ -329,19 +401,28 @@
         loadTransactionLogs();
       } else if (tab === 'invest-history') {
         loadInvestmentHistory();
+      } else if (tab === 'investment-progress') {
+        loadInvestmentProgress();
       }
     }
 
-    // Function to render investment status
-    function renderInvestmentStatus(investments) {
-      const container = document.getElementById('investmentStatus');
+    // Function to render investment progress
+    function renderInvestmentProgress(investments) {
+      const container = document.getElementById('investmentProgressContent');
       
-      if (!investments || investments.length === 0) {
+      // Filter active investments first
+      const activeInvestments = investments.filter(inv => inv.status === 'active');
+      const completedInvestments = investments.filter(inv => inv.status === 'completed');
+      
+      if (activeInvestments.length === 0 && completedInvestments.length === 0) {
         container.innerHTML = `
           <div class="no-data">
             <i class="fas fa-chart-line"></i>
-            <p>No active investments found</p>
+            <p>No investments found</p>
             <p style="font-size: 12px; color: #888;">Start investing to see your progress here</p>
+            <button class="refresh-btn" onclick="loadInvestmentProgress()" style="margin-top: 15px;">
+              <i class="fas fa-plus-circle"></i> Go to Invest Page
+            </button>
           </div>
         `;
         return;
@@ -349,97 +430,144 @@
 
       let html = '';
       
-      investments.forEach(investment => {
-        const isActive = investment.status === 'active';
-        const isCompleted = investment.status === 'completed';
-        const daysCompleted = investment.daysCompleted || 0;
-        const totalDays = investment.totalDays || 30;
-        const remainingDays = investment.remainingDays || Math.max(0, totalDays - daysCompleted);
-        const progressPercent = Math.min(100, (daysCompleted / totalDays) * 100);
-        const profitEarned = investment.totalProfitEarned || 0;
-        const capitalReturned = investment.capitalReturned || false;
+      // Active Investments Section
+      if (activeInvestments.length > 0) {
+        html += `<div style="margin-bottom: 20px;"><h3 style="color: var(--info); margin-bottom: 10px;">🟢 Active Investments (${activeInvestments.length})</h3>`;
         
-        let statusClass = 'status-active-bg';
-        let statusText = 'Active';
+        activeInvestments.forEach(investment => {
+          const daysCompleted = investment.daysCompleted || 0;
+          const totalDays = investment.totalDays || 30;
+          const remainingDays = Math.max(0, totalDays - daysCompleted);
+          const progressPercent = Math.min(100, (daysCompleted / totalDays) * 100);
+          const profitEarned = investment.totalProfitEarned || 0;
+          const dailyProfit = investment.amount * (investment.dailyRate || 0.035);
+          
+          html += `
+            <div class="investment-card">
+              <div class="investment-header">
+                <div class="plan-name">${investment.plan}</div>
+                <div class="investment-status status-active-bg">
+                  <i class="fas fa-spinner"></i> Active
+                </div>
+              </div>
+              
+              <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                <span class="amount-badge">$${investment.amount.toLocaleString()}</span>
+                <span class="profit-badge">+$${dailyProfit.toFixed(2)}/day</span>
+              </div>
+              
+              <div class="investment-details">
+                <div class="detail-item">
+                  <span class="detail-label">Daily Rate</span>
+                  <span class="detail-value">${(investment.dailyRate * 100).toFixed(2)}%</span>
+                </div>
+                <div class="detail-item">
+                  <span class="detail-label">Profit Earned</span>
+                  <span class="detail-value" style="color: var(--success);">$${profitEarned.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                </div>
+                <div class="detail-item">
+                  <span class="detail-label">Capital Return</span>
+                  <span class="capital-pending">⏳ In ${remainingDays} days</span>
+                </div>
+                <div class="detail-item">
+                  <span class="detail-label">Days Completed</span>
+                  <span class="day-counter">${daysCompleted}/${totalDays} days</span>
+                </div>
+              </div>
+              
+              <div class="progress-container">
+                <div class="progress-label">
+                  <span>Investment Progress</span>
+                  <span>${remainingDays} days remaining</span>
+                </div>
+                <div class="progress-bar">
+                  <div class="progress-fill" style="width: ${progressPercent}%"></div>
+                </div>
+              </div>
+            </div>
+          `;
+        });
         
-        if (isCompleted) {
-          statusClass = 'status-completed-bg';
-          statusText = capitalReturned ? 'Completed ✓' : 'Completed';
-        } else if (investment.status === 'cancelled') {
-          statusClass = 'status-cancelled-bg';
-          statusText = 'Cancelled';
-        }
-
-        html += `
-          <div class="investment-card ${isCompleted ? 'completed' : ''}">
-            <div class="investment-header">
-              <div class="plan-name">${investment.plan}</div>
-              <div class="investment-status ${statusClass}">${statusText}</div>
+        html += `</div>`;
+      }
+      
+      // Completed Investments Section
+      if (completedInvestments.length > 0) {
+        html += `<div><h3 style="color: var(--success); margin-bottom: 10px;">✅ Completed Investments (${completedInvestments.length})</h3>`;
+        
+        completedInvestments.forEach(investment => {
+          const profitEarned = investment.totalProfitEarned || 0;
+          const capitalReturned = investment.capitalReturned || false;
+          const completionDate = new Date(investment.completedAt || investment.endDate);
+          
+          html += `
+            <div class="investment-card completed">
+              <div class="investment-header">
+                <div class="plan-name">${investment.plan}</div>
+                <div class="investment-status status-completed-bg">
+                  <i class="fas fa-check-circle"></i> Completed
+                </div>
+              </div>
+              
+              <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                <span class="amount-badge">$${investment.amount.toLocaleString()}</span>
+                <span class="profit-badge">Total Profit: $${profitEarned.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+              </div>
+              
+              <div class="investment-details">
+                <div class="detail-item">
+                  <span class="detail-label">Investment Period</span>
+                  <span class="detail-value">30 days</span>
+                </div>
+                <div class="detail-item">
+                  <span class="detail-label">Capital Status</span>
+                  <span class="${capitalReturned ? 'capital-returned' : 'capital-pending'}">
+                    ${capitalReturned ? '✅ Returned' : '⏳ Processing'}
+                  </span>
+                </div>
+                <div class="detail-item">
+                  <span class="detail-label">Completed On</span>
+                  <span class="detail-value">${completionDate.toLocaleDateString()}</span>
+                </div>
+                <div class="detail-item">
+                  <span class="detail-label">Daily Rate</span>
+                  <span class="detail-value">${(investment.dailyRate * 100).toFixed(2)}%</span>
+                </div>
+              </div>
+              
+              <div class="progress-container">
+                <div class="progress-bar">
+                  <div class="progress-fill completed-progress" style="width: 100%"></div>
+                </div>
+                <div style="text-align: center; margin-top: 5px; font-size: 12px; color: var(--success);">
+                  <i class="fas fa-trophy"></i> Investment successfully completed
+                </div>
+              </div>
             </div>
-            
-            <div class="investment-details">
-              <div class="detail-item">
-                <span class="detail-label">Amount</span>
-                <span class="detail-value">$${investment.amount.toLocaleString()}</span>
-              </div>
-              <div class="detail-item">
-                <span class="detail-label">Daily Rate</span>
-                <span class="detail-value">${(investment.dailyRate * 100).toFixed(2)}%</span>
-              </div>
-              <div class="detail-item">
-                <span class="detail-label">Profit Earned</span>
-                <span class="detail-value" style="color: var(--success);">$${profitEarned.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
-              </div>
-              <div class="detail-item">
-                <span class="detail-label">Capital Return</span>
-                <span class="detail-value" style="color: ${capitalReturned ? 'var(--success)' : 'var(--warning)'};">${capitalReturned ? '✅ Returned' : '⏳ Pending'}</span>
-              </div>
-            </div>
-            
-            ${isActive ? `
-            <div class="progress-container">
-              <div class="progress-label">
-                <span>Progress: ${daysCompleted}/${totalDays} days</span>
-                <span>${remainingDays} days remaining</span>
-              </div>
-              <div class="progress-bar">
-                <div class="progress-fill" style="width: ${progressPercent}%"></div>
-              </div>
-            </div>
-            ` : ''}
-            
-            ${isCompleted ? `
-            <div class="progress-container">
-              <div class="progress-label">
-                <span>✅ Investment Completed</span>
-                <span>${new Date(investment.completedAt || investment.endDate).toLocaleDateString()}</span>
-              </div>
-              <div class="progress-bar">
-                <div class="progress-fill completed-progress" style="width: 100%"></div>
-              </div>
-            </div>
-            ` : ''}
-          </div>
-        `;
-      });
+          `;
+        });
+        
+        html += `</div>`;
+      }
 
       container.innerHTML = html;
     }
 
-    // Function to load investment status
-    async function loadInvestmentStatus() {
+    // Function to load investment progress
+    async function loadInvestmentProgress() {
       const token = localStorage.getItem('token');
       if (!token) {
-        document.getElementById('investmentStatus').innerHTML = `
+        document.getElementById('investmentProgressContent').innerHTML = `
           <div class="no-data">
-            <p>Please login to view your investments</p>
+            <p>Please login to view your investment progress</p>
+            <button onclick="window.location.href='index.html'" class="refresh-btn">Login</button>
           </div>
         `;
         return;
       }
       
-      const container = document.getElementById('investmentStatus');
-      container.innerHTML = `<div class="loading"><div class="spinner"></div><p>Loading investments...</p></div>`;
+      const container = document.getElementById('investmentProgressContent');
+      container.innerHTML = `<div class="loading"><div class="spinner"></div><p>Loading investment progress...</p></div>`;
       
       try {
         const res = await fetch(API_BASE + '/user/investments', {
@@ -449,13 +577,14 @@
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         
         const data = await res.json();
-        renderInvestmentStatus(data.investments || []);
+        renderInvestmentProgress(data.investments || []);
       } catch (err) {
         console.error('Error loading investments:', err);
         container.innerHTML = `
           <div class="no-data">
             <i class="fas fa-exclamation-triangle"></i>
-            <p>Error loading investments</p>
+            <p>Error loading investment progress</p>
+            <button class="refresh-btn" onclick="loadInvestmentProgress()">Try Again</button>
           </div>
         `;
       }
@@ -484,11 +613,15 @@
         depositList.innerHTML = data.deposits && data.deposits.length > 0 
           ? data.deposits.map(d => `
               <li class="log-item">
-                <span class="transaction-type type-deposit">DEPOSIT</span>
-                <strong>$${d.amount.toLocaleString()}</strong><br>
-                <strong>Method:</strong> ${d.method}<br>
-                <strong>Status:</strong> <span class="status-${d.status}">${d.status.toUpperCase()}</span><br>
-                <small>${new Date(d.createdAt).toLocaleString()}</small>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                  <span class="transaction-type type-deposit">DEPOSIT</span>
+                  <span class="amount-badge">$${d.amount.toLocaleString()}</span>
+                </div>
+                <div><strong>Method:</strong> ${d.method || 'N/A'}</div>
+                <div><strong>Status:</strong> <span class="status-${d.status}">${d.status.toUpperCase()}</span></div>
+                <div style="margin-top: 8px; font-size: 12px; color: #666;">
+                  <i class="far fa-clock"></i> ${new Date(d.createdAt).toLocaleString()}
+                </div>
               </li>
             `).join("")
           : `<div class="no-data"><i class="fas fa-wallet"></i><p>No deposits yet</p></div>`;
@@ -498,12 +631,16 @@
         withdrawList.innerHTML = data.withdrawals && data.withdrawals.length > 0
           ? data.withdrawals.map(w => `
               <li class="log-item">
-                <span class="transaction-type type-withdraw">WITHDRAW</span>
-                <strong>$${w.amount.toLocaleString()}</strong><br>
-                <strong>Method:</strong> ${w.method}<br>
-                <strong>Address:</strong> ${w.address}<br>
-                <strong>Status:</strong> <span class="status-${w.status}">${w.status.toUpperCase()}</span><br>
-                <small>${new Date(w.createdAt).toLocaleString()}</small>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                  <span class="transaction-type type-withdraw">WITHDRAW</span>
+                  <span class="amount-badge">$${w.amount.toLocaleString()}</span>
+                </div>
+                <div><strong>Method:</strong> ${w.method || 'N/A'}</div>
+                <div><strong>Address:</strong> ${w.address?.substring(0, 20)}...</div>
+                <div><strong>Status:</strong> <span class="status-${w.status}">${w.status.toUpperCase()}</span></div>
+                <div style="margin-top: 8px; font-size: 12px; color: #666;">
+                  <i class="far fa-clock"></i> ${new Date(w.createdAt).toLocaleString()}
+                </div>
               </li>
             `).join("")
           : `<div class="no-data"><i class="fas fa-money-bill"></i><p>No withdrawals yet</p></div>`;
@@ -537,12 +674,22 @@
         investList.innerHTML = investments.length > 0
           ? investments.map(i => `
               <li class="log-item">
-                <span class="transaction-type type-invest">INVESTMENT</span>
-                <strong>$${i.amount.toLocaleString()}</strong><br>
-                <strong>Plan:</strong> ${i.plan}<br>
-                <strong>Status:</strong> <span class="status-${i.status}">${(i.status || 'active').toUpperCase()}</span><br>
-                <strong>Profit Earned:</strong> $${(i.totalProfitEarned || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}<br>
-                <small>Started: ${new Date(i.startDate).toLocaleDateString()}</small>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                  <span class="transaction-type type-invest">${i.plan}</span>
+                  <span class="amount-badge">$${i.amount.toLocaleString()}</span>
+                </div>
+                <div style="display: flex; gap: 10px; margin-bottom: 8px;">
+                  <span class="status-${i.status}" style="font-size: 12px;">
+                    <i class="fas fa-circle"></i> ${(i.status || 'active').toUpperCase()}
+                  </span>
+                  <span style="font-size: 12px; color: var(--success);">
+                    <i class="fas fa-coins"></i> $${(i.totalProfitEarned || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  </span>
+                </div>
+                <div style="font-size: 12px; color: #666;">
+                  <div><i class="far fa-calendar"></i> Started: ${new Date(i.startDate).toLocaleDateString()}</div>
+                  ${i.status === 'completed' ? `<div><i class="fas fa-flag-checkered"></i> Ended: ${new Date(i.completedAt || i.endDate).toLocaleDateString()}</div>` : ''}
+                </div>
               </li>
             `).join("")
           : `<div class="no-data"><i class="fas fa-chart-line"></i><p>No investment history</p></div>`;
@@ -555,8 +702,7 @@
 
     // Load data on page load
     document.addEventListener('DOMContentLoaded', function() {
-      loadInvestmentStatus();
-      loadTransactionLogs();
+      loadInvestmentProgress();
     });
   </script>
 </body>
