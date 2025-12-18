@@ -3,62 +3,290 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Transaction Logs</title>
+  <title>Transaction Logs & Investment History</title>
   <link rel="stylesheet" href="style.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <style>
-    .logs-container { padding: 20px; }
-    .tabs { display: flex; justify-content: space-around; margin-bottom: 20px; }
+    :root {
+      --accent-start: gold;
+      --accent-end: #d4af37;
+      --success: #2ecc71;
+      --warning: #f39c12;
+      --info: #3498db;
+      --danger: #e74c3c;
+    }
+
+    .logs-container { 
+      padding: 20px; 
+      max-width: 480px;
+      margin: 0 auto;
+    }
+    
+    .tabs { 
+      display: flex; 
+      justify-content: space-around; 
+      margin-bottom: 20px; 
+      background: #f8f9fa;
+      border-radius: 10px;
+      padding: 5px;
+    }
+    
     .tab-btn {
       flex: 1;
-      padding: 10px;
+      padding: 12px 5px;
       cursor: pointer;
       border: none;
-      background: #eee;
-      font-weight: bold;
+      background: transparent;
+      font-weight: 600;
+      border-radius: 8px;
+      transition: all 0.3s ease;
     }
-    .tab-btn.active { background: gold; color: #000; }
-    .log-list { list-style: none; padding: 0; }
+    
+    .tab-btn.active { 
+      background: linear-gradient(to right, var(--accent-start), var(--accent-end)); 
+      color: #000;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    
+    .log-list { 
+      list-style: none; 
+      padding: 0; 
+    }
+    
     .log-item {
-      border: 1px solid #ddd;
+      border: 1px solid #e0e0e0;
       padding: 15px;
       border-radius: 10px;
-      margin-bottom: 10px;
+      margin-bottom: 12px;
       background: #fff;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
     }
-    .status-pending { color: orange; }
-    .status-approved { color: green; }
-    .status-rejected { color: red; }
+    
+    .status-pending { color: var(--warning); font-weight: 600; }
+    .status-approved { color: var(--success); font-weight: 600; }
+    .status-rejected { color: var(--danger); font-weight: 600; }
+    .status-active { color: var(--info); font-weight: 600; }
+    .status-completed { color: var(--success); font-weight: 600; }
+
+    /* Investment Status Section */
+    .investment-card {
+      background: white;
+      border-radius: 10px;
+      padding: 16px;
+      margin-bottom: 12px;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.06);
+      border-left: 4px solid var(--accent-end);
+    }
+
+    .investment-card.completed {
+      border-left-color: var(--success);
+    }
+
+    .investment-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .plan-name {
+      font-weight: bold;
+      color: #222;
+      font-size: 16px;
+    }
+
+    .investment-status {
+      padding: 4px 10px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: bold;
+    }
+
+    .status-active-bg {
+      background: #e8f4fd;
+      color: var(--info);
+    }
+
+    .status-completed-bg {
+      background: #e7f7ef;
+      color: var(--success);
+    }
+
+    .status-cancelled-bg {
+      background: #fdeded;
+      color: var(--danger);
+    }
+
+    .investment-details {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      font-size: 13px;
+      margin-bottom: 12px;
+    }
+
+    .detail-item {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .detail-label {
+      color: #666;
+      font-size: 11px;
+      margin-bottom: 2px;
+    }
+
+    .detail-value {
+      font-weight: 600;
+      color: #222;
+    }
+
+    .progress-container {
+      margin-top: 12px;
+    }
+
+    .progress-label {
+      display: flex;
+      justify-content: space-between;
+      font-size: 12px;
+      margin-bottom: 4px;
+      color: #666;
+    }
+
+    .progress-bar {
+      height: 8px;
+      background: #eee;
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(to right, var(--accent-start), var(--accent-end));
+      border-radius: 4px;
+      transition: width 0.3s ease;
+    }
+
+    .completed-progress {
+      background: linear-gradient(to right, var(--success), #27ae60);
+    }
 
     /* Loading spinner */
     .loading {
       text-align: center;
-      padding: 20px;
+      padding: 30px;
     }
+    
     .spinner {
       border: 4px solid #f3f3f3;
-      border-top: 4px solid gold;
+      border-top: 4px solid var(--accent-end);
       border-radius: 50%;
       width: 40px;
       height: 40px;
       margin: auto;
       animation: spin 1s linear infinite;
     }
+    
     @keyframes spin {
       0% { transform: rotate(0deg); }
       100% { transform: rotate(360deg); }
     }
+
+    .no-data {
+      text-align: center;
+      padding: 40px 20px;
+      color: #666;
+    }
+
+    .no-data i {
+      font-size: 48px;
+      margin-bottom: 10px;
+      color: #ddd;
+    }
+
+    .refresh-btn {
+      background: linear-gradient(to right, var(--accent-start), var(--accent-end));
+      border: none;
+      border-radius: 6px;
+      padding: 8px 16px;
+      font-weight: 600;
+      cursor: pointer;
+      color: #111;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin: 10px auto;
+    }
+
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin: 20px 0 10px 0;
+      border-bottom: 2px solid #eee;
+      padding-bottom: 8px;
+    }
+
+    .section-title {
+      font-size: 18px;
+      font-weight: 600;
+      color: #333;
+    }
+
+    .back-btn {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      background: linear-gradient(to right, var(--accent-start), var(--accent-end));
+      border: none;
+      border-radius: 6px;
+      padding: 8px 14px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      color: #111;
+      box-shadow: 0 3px 8px rgba(0,0,0,0.1);
+    }
+
+    .transaction-type {
+      display: inline-block;
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-size: 10px;
+      font-weight: 600;
+      margin-right: 8px;
+    }
+
+    .type-deposit { background: #e8f4fd; color: var(--info); }
+    .type-withdraw { background: #fef5e7; color: var(--warning); }
+    .type-invest { background: #e7f7ef; color: var(--success); }
   </style>
 </head>
 <body>
   <div class="logs-container">
-    <h2>My Transaction Logs</h2>
+    <button class="back-btn" onclick="window.location.href='dashboard.html'">⬅ Back</button>
+    <h2>📋 Transaction & Investment History</h2>
 
-    <!-- Tabs -->
+    <!-- Investment Status Section -->
+    <div class="section-header">
+      <div class="section-title">📈 My Investment Progress</div>
+      <button class="refresh-btn" onclick="loadInvestmentStatus()">
+        <i class="fas fa-sync-alt"></i> Refresh
+      </button>
+    </div>
+    <div id="investmentStatus"></div>
+
+    <!-- Tabs for Transactions -->
     <div class="tabs">
-      <button class="tab-btn active" onclick="showTab('deposits')">Deposits</button>
-      <button class="tab-btn" onclick="showTab('withdrawals')">Withdrawals</button>
-      <button class="tab-btn" onclick="showTab('investments')">Investments</button>
+      <button class="tab-btn active" onclick="showTab('deposits')">
+        <i class="fas fa-wallet"></i><br>Deposits
+      </button>
+      <button class="tab-btn" onclick="showTab('withdrawals')">
+        <i class="fas fa-money-bill"></i><br>Withdrawals
+      </button>
+      <button class="tab-btn" onclick="showTab('invest-history')">
+        <i class="fas fa-history"></i><br>History
+      </button>
     </div>
 
     <!-- Loading -->
@@ -73,30 +301,168 @@
     <!-- Withdraw Logs -->
     <ul id="withdrawals" class="log-list" style="display:none;"></ul>
 
-    <!-- Investment Logs -->
-    <ul id="investments" class="log-list" style="display:none;"></ul>
+    <!-- Investment History Logs -->
+    <ul id="invest-history" class="log-list" style="display:none;"></ul>
   </div>
 
   <div class="bottom-nav">
     <a href="deposit.html"><i class="fas fa-wallet"></i><br>Deposit</a>
-    <a href="invest.html"><i class="fas fa-piggy-bank"></i><br>My invest</a>
+    <a href="invest.html"><i class="fas fa-piggy-bank"></i><br>Invest</a>
     <a href="dashboard.html"><i class="fas fa-home"></i><br>Home</a>
     <a href="withdraw.html"><i class="fas fa-money-bill"></i><br>Withdraw</a>
     <a href="transfer.html"><i class="fas fa-exchange-alt"></i><br>Transfer</a>
   </div>
 
   <script>
+    const API_BASE = window.location.hostname.includes('localhost')
+      ? 'http://localhost:3000'
+      : 'https://harvestive-co-backend.onrender.com';
+
     function showTab(tab) {
       document.querySelectorAll(".log-list").forEach(list => list.style.display = "none");
       document.getElementById(tab).style.display = "block";
       document.querySelectorAll(".tab-btn").forEach(btn => btn.classList.remove("active"));
       event.target.classList.add("active");
 
-      // Refresh logs on tab switch
-      loadLogs();
+      // Load data for the selected tab
+      if (tab === 'deposits' || tab === 'withdrawals') {
+        loadTransactionLogs();
+      } else if (tab === 'invest-history') {
+        loadInvestmentHistory();
+      }
     }
 
-    async function loadLogs() {
+    // Function to render investment status
+    function renderInvestmentStatus(investments) {
+      const container = document.getElementById('investmentStatus');
+      
+      if (!investments || investments.length === 0) {
+        container.innerHTML = `
+          <div class="no-data">
+            <i class="fas fa-chart-line"></i>
+            <p>No active investments found</p>
+            <p style="font-size: 12px; color: #888;">Start investing to see your progress here</p>
+          </div>
+        `;
+        return;
+      }
+
+      let html = '';
+      
+      investments.forEach(investment => {
+        const isActive = investment.status === 'active';
+        const isCompleted = investment.status === 'completed';
+        const daysCompleted = investment.daysCompleted || 0;
+        const totalDays = investment.totalDays || 30;
+        const remainingDays = investment.remainingDays || Math.max(0, totalDays - daysCompleted);
+        const progressPercent = Math.min(100, (daysCompleted / totalDays) * 100);
+        const profitEarned = investment.totalProfitEarned || 0;
+        const capitalReturned = investment.capitalReturned || false;
+        
+        let statusClass = 'status-active-bg';
+        let statusText = 'Active';
+        
+        if (isCompleted) {
+          statusClass = 'status-completed-bg';
+          statusText = capitalReturned ? 'Completed ✓' : 'Completed';
+        } else if (investment.status === 'cancelled') {
+          statusClass = 'status-cancelled-bg';
+          statusText = 'Cancelled';
+        }
+
+        html += `
+          <div class="investment-card ${isCompleted ? 'completed' : ''}">
+            <div class="investment-header">
+              <div class="plan-name">${investment.plan}</div>
+              <div class="investment-status ${statusClass}">${statusText}</div>
+            </div>
+            
+            <div class="investment-details">
+              <div class="detail-item">
+                <span class="detail-label">Amount</span>
+                <span class="detail-value">$${investment.amount.toLocaleString()}</span>
+              </div>
+              <div class="detail-item">
+                <span class="detail-label">Daily Rate</span>
+                <span class="detail-value">${(investment.dailyRate * 100).toFixed(2)}%</span>
+              </div>
+              <div class="detail-item">
+                <span class="detail-label">Profit Earned</span>
+                <span class="detail-value" style="color: var(--success);">$${profitEarned.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+              </div>
+              <div class="detail-item">
+                <span class="detail-label">Capital Return</span>
+                <span class="detail-value" style="color: ${capitalReturned ? 'var(--success)' : 'var(--warning)'};">${capitalReturned ? '✅ Returned' : '⏳ Pending'}</span>
+              </div>
+            </div>
+            
+            ${isActive ? `
+            <div class="progress-container">
+              <div class="progress-label">
+                <span>Progress: ${daysCompleted}/${totalDays} days</span>
+                <span>${remainingDays} days remaining</span>
+              </div>
+              <div class="progress-bar">
+                <div class="progress-fill" style="width: ${progressPercent}%"></div>
+              </div>
+            </div>
+            ` : ''}
+            
+            ${isCompleted ? `
+            <div class="progress-container">
+              <div class="progress-label">
+                <span>✅ Investment Completed</span>
+                <span>${new Date(investment.completedAt || investment.endDate).toLocaleDateString()}</span>
+              </div>
+              <div class="progress-bar">
+                <div class="progress-fill completed-progress" style="width: 100%"></div>
+              </div>
+            </div>
+            ` : ''}
+          </div>
+        `;
+      });
+
+      container.innerHTML = html;
+    }
+
+    // Function to load investment status
+    async function loadInvestmentStatus() {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        document.getElementById('investmentStatus').innerHTML = `
+          <div class="no-data">
+            <p>Please login to view your investments</p>
+          </div>
+        `;
+        return;
+      }
+      
+      const container = document.getElementById('investmentStatus');
+      container.innerHTML = `<div class="loading"><div class="spinner"></div><p>Loading investments...</p></div>`;
+      
+      try {
+        const res = await fetch(API_BASE + '/user/investments', {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        
+        const data = await res.json();
+        renderInvestmentStatus(data.investments || []);
+      } catch (err) {
+        console.error('Error loading investments:', err);
+        container.innerHTML = `
+          <div class="no-data">
+            <i class="fas fa-exclamation-triangle"></i>
+            <p>Error loading investments</p>
+          </div>
+        `;
+      }
+    }
+
+    // Function to load transaction logs
+    async function loadTransactionLogs() {
       const token = localStorage.getItem("token");
       if (!token) {
         alert("You must be logged in.");
@@ -108,54 +474,90 @@
       loading.style.display = "block";
 
       try {
-        const res = await fetch("https://harvestive-co-backend.onrender.com/user/dashboard", {
+        const res = await fetch(API_BASE + "/user/dashboard", {
           headers: { Authorization: `Bearer ${token}` }
         });
         const data = await res.json();
 
         // Deposits
         const depositList = document.getElementById("deposits");
-        depositList.innerHTML = data.deposits.map(d => `
-          <li class="log-item">
-            <strong>Deposit:</strong> $${d.amount}<br>
-            <strong>Method:</strong> ${d.method}<br>
-            <strong>Status:</strong> <span class="status-${d.status}">${d.status}</span><br>
-            <small>${new Date(d.createdAt).toLocaleString()}</small>
-          </li>
-        `).join("");
+        depositList.innerHTML = data.deposits && data.deposits.length > 0 
+          ? data.deposits.map(d => `
+              <li class="log-item">
+                <span class="transaction-type type-deposit">DEPOSIT</span>
+                <strong>$${d.amount.toLocaleString()}</strong><br>
+                <strong>Method:</strong> ${d.method}<br>
+                <strong>Status:</strong> <span class="status-${d.status}">${d.status.toUpperCase()}</span><br>
+                <small>${new Date(d.createdAt).toLocaleString()}</small>
+              </li>
+            `).join("")
+          : `<div class="no-data"><i class="fas fa-wallet"></i><p>No deposits yet</p></div>`;
 
         // Withdrawals
         const withdrawList = document.getElementById("withdrawals");
-        withdrawList.innerHTML = data.withdrawals.map(w => `
-          <li class="log-item">
-            <strong>Withdraw:</strong> $${w.amount}<br>
-            <strong>Method:</strong> ${w.method}<br>
-            <strong>Address:</strong> ${w.address}<br>
-            <strong>Status:</strong> <span class="status-${w.status}">${w.status}</span><br>
-            <small>${new Date(w.createdAt).toLocaleString()}</small>
-          </li>
-        `).join("");
-
-        // Investments
-        const investList = document.getElementById("investments");
-        investList.innerHTML = data.investments.map(i => `
-          <li class="log-item">
-            <strong>Invested:</strong> $${i.amount}<br>
-            <strong>Status:</strong> ${i.status || "active"}<br>
-            <small>${new Date(i.createdAt).toLocaleString()}</small>
-          </li>
-        `).join("");
+        withdrawList.innerHTML = data.withdrawals && data.withdrawals.length > 0
+          ? data.withdrawals.map(w => `
+              <li class="log-item">
+                <span class="transaction-type type-withdraw">WITHDRAW</span>
+                <strong>$${w.amount.toLocaleString()}</strong><br>
+                <strong>Method:</strong> ${w.method}<br>
+                <strong>Address:</strong> ${w.address}<br>
+                <strong>Status:</strong> <span class="status-${w.status}">${w.status.toUpperCase()}</span><br>
+                <small>${new Date(w.createdAt).toLocaleString()}</small>
+              </li>
+            `).join("")
+          : `<div class="no-data"><i class="fas fa-money-bill"></i><p>No withdrawals yet</p></div>`;
 
       } catch (err) {
         console.error(err);
-        alert("⚠️ Error loading logs");
+        alert("⚠️ Error loading transaction logs");
       } finally {
-        loading.style.display = "none"; // hide spinner after load
+        loading.style.display = "none";
       }
     }
 
-    // Load logs on page load
-    loadLogs();
+    // Function to load investment history
+    async function loadInvestmentHistory() {
+      const token = localStorage.getItem("token");
+      if (!token) return;
+
+      const investList = document.getElementById("invest-history");
+      investList.innerHTML = `<div class="loading"><div class="spinner"></div><p>Loading investment history...</p></div>`;
+
+      try {
+        const res = await fetch(API_BASE + '/user/investments', {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        
+        const data = await res.json();
+        const investments = data.investments || [];
+
+        investList.innerHTML = investments.length > 0
+          ? investments.map(i => `
+              <li class="log-item">
+                <span class="transaction-type type-invest">INVESTMENT</span>
+                <strong>$${i.amount.toLocaleString()}</strong><br>
+                <strong>Plan:</strong> ${i.plan}<br>
+                <strong>Status:</strong> <span class="status-${i.status}">${(i.status || 'active').toUpperCase()}</span><br>
+                <strong>Profit Earned:</strong> $${(i.totalProfitEarned || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}<br>
+                <small>Started: ${new Date(i.startDate).toLocaleDateString()}</small>
+              </li>
+            `).join("")
+          : `<div class="no-data"><i class="fas fa-chart-line"></i><p>No investment history</p></div>`;
+
+      } catch (err) {
+        console.error(err);
+        investList.innerHTML = `<div class="no-data"><i class="fas fa-exclamation-triangle"></i><p>Error loading investment history</p></div>`;
+      }
+    }
+
+    // Load data on page load
+    document.addEventListener('DOMContentLoaded', function() {
+      loadInvestmentStatus();
+      loadTransactionLogs();
+    });
   </script>
 </body>
 </html>

@@ -11,8 +11,6 @@
       --card: #fff;
       --accent-start: gold;
       --accent-end: #d4af37;
-      --success: #2ecc71;
-      --warning: #f39c12;
       --max-width: 480px;
     }
 
@@ -27,22 +25,13 @@
       padding: 16px;
       max-width: var(--max-width);
       margin: auto;
-      position: relative; /* needed for back button positioning */
+      position: relative;
     }
 
     h2 {
       text-align: center;
       margin: 10px 0 18px;
       font-size: 20px;
-    }
-
-    h3 {
-      text-align: center;
-      margin: 20px 0 12px;
-      font-size: 18px;
-      color: #333;
-      border-bottom: 2px solid var(--accent-end);
-      padding-bottom: 8px;
     }
 
     /* Back button */
@@ -61,139 +50,17 @@
       box-shadow: 0 3px 8px rgba(0,0,0,0.1);
     }
 
-    /* Investment status section */
-    #investmentStatus {
-      margin: 20px 0;
-    }
-
-    .status-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 12px;
-    }
-
-    .refresh-btn {
-      background: var(--accent-end);
-      border: none;
-      border-radius: 4px;
-      padding: 6px 12px;
-      font-size: 12px;
-      cursor: pointer;
-      color: white;
-    }
-
-    .no-investments {
-      text-align: center;
-      padding: 20px;
-      background: white;
-      border-radius: 8px;
-      color: #666;
-    }
-
-    .investment-card {
-      background: white;
-      border-radius: 10px;
-      padding: 16px;
-      margin-bottom: 12px;
-      box-shadow: 0 4px 14px rgba(0,0,0,0.06);
-      border-left: 4px solid var(--accent-end);
-    }
-
-    .investment-card.completed {
-      border-left-color: var(--success);
-    }
-
-    .investment-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 10px;
-    }
-
-    .plan-name {
-      font-weight: bold;
-      color: #222;
-      font-size: 16px;
-    }
-
-    .investment-status {
-      padding: 4px 10px;
-      border-radius: 12px;
-      font-size: 12px;
-      font-weight: bold;
-    }
-
-    .status-active {
-      background: #e8f4fd;
-      color: #3498db;
-    }
-
-    .status-completed {
-      background: #e7f7ef;
-      color: var(--success);
-    }
-
-    .status-cancelled {
-      background: #fdeded;
-      color: #e74c3c;
-    }
-
-    .investment-details {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
-      font-size: 13px;
-      margin-bottom: 12px;
-    }
-
-    .detail-item {
-      display: flex;
-      flex-direction: column;
-    }
-
-    .detail-label {
-      color: #666;
-      font-size: 11px;
-      margin-bottom: 2px;
-    }
-
-    .detail-value {
-      font-weight: 600;
-      color: #222;
-    }
-
-    .progress-container {
-      margin-top: 12px;
-    }
-
-    .progress-label {
-      display: flex;
-      justify-content: space-between;
-      font-size: 12px;
-      margin-bottom: 4px;
-      color: #666;
-    }
-
-    .progress-bar {
-      height: 8px;
-      background: #eee;
-      border-radius: 4px;
-      overflow: hidden;
-    }
-
-    .progress-fill {
-      height: 100%;
+    .info-box {
       background: linear-gradient(to right, var(--accent-start), var(--accent-end));
-      border-radius: 4px;
-      transition: width 0.3s ease;
+      color: #111;
+      padding: 12px;
+      border-radius: 8px;
+      margin-bottom: 16px;
+      font-size: 14px;
+      text-align: center;
+      font-weight: 600;
     }
 
-    .completed-progress {
-      background: linear-gradient(to right, #2ecc71, #27ae60);
-    }
-
-    /* Plans section */
     #plansContainer {
       display: flex;
       flex-direction: column;
@@ -330,14 +197,6 @@
     .notice { font-size: 13px; color: #555; margin-bottom: 8px; }
     .muted { color: #666; font-size: 13px; }
 
-    /* Loading state */
-    .loading {
-      text-align: center;
-      padding: 20px;
-      color: #666;
-    }
-
-    /* small responsive tweak */
     @media (min-width: 481px) {
       .page { padding: 18px; }
     }
@@ -348,18 +207,10 @@
     <button class="back-btn" onclick="window.location.href='dashboard.html'">⬅ Back</button>
     <h2>📈 Investment Plans</h2>
     
-    <!-- Current Investments Section -->
-    <div id="investmentStatus">
-      <h3>My Current Investments</h3>
-      <div class="status-header">
-        <span class="muted">30-day investment cycle with capital return</span>
-        <button class="refresh-btn" onclick="loadInvestmentStatus()">🔄 Refresh</button>
-      </div>
-      <div id="currentInvestments"></div>
+    <div class="info-box">
+      💰 30-day investment cycle with capital return
     </div>
-
-    <!-- Available Plans Section -->
-    <h3>Available Plans</h3>
+    
     <div id="plansContainer" aria-live="polite"></div>
   </div>
 
@@ -383,7 +234,6 @@
   </div>
 
   <script>
-    // static plans
     const plans = [
       { name: 'STANDARD PLAN', rate: '3.50%', min: 100, max: 4999, times: 30, capitalBack: 'Yes', levels: [8,12,16,20,30] },
       { name: 'PREMIUM PLAN', rate: '4.50%', min: 5000, max: 24000, times: 30, capitalBack: 'Yes', levels: [8,12,16,20,30] },
@@ -392,141 +242,9 @@
     ];
 
     let selectedPlan = null;
-
-    // Correct API base: use local backend while developing on localhost, otherwise your Render URL.
     const API_BASE = window.location.hostname.includes('localhost')
       ? 'http://localhost:3000'
       : 'https://harvestive-co-backend.onrender.com';
-
-    // Function to render investment status
-    function renderInvestmentStatus(investments) {
-      const container = document.getElementById('currentInvestments');
-      
-      if (!investments || investments.length === 0) {
-        container.innerHTML = `
-          <div class="no-investments">
-            <p>📭 No active investments found</p>
-            <p class="muted">Invest in a plan to start earning daily profits!</p>
-          </div>
-        `;
-        return;
-      }
-
-      let html = '';
-      
-      investments.forEach(investment => {
-        const isActive = investment.status === 'active';
-        const isCompleted = investment.status === 'completed';
-        const daysCompleted = investment.daysCompleted || 0;
-        const totalDays = investment.totalDays || 30;
-        const remainingDays = investment.remainingDays || Math.max(0, totalDays - daysCompleted);
-        const progressPercent = Math.min(100, (daysCompleted / totalDays) * 100);
-        const profitEarned = investment.totalProfitEarned || 0;
-        const capitalReturned = investment.capitalReturned || false;
-        
-        let statusClass = 'status-active';
-        let statusText = 'Active';
-        
-        if (isCompleted) {
-          statusClass = 'status-completed';
-          statusText = capitalReturned ? 'Completed (Capital Returned)' : 'Completed';
-        } else if (investment.status === 'cancelled') {
-          statusClass = 'status-cancelled';
-          statusText = 'Cancelled';
-        }
-
-        html += `
-          <div class="investment-card ${isCompleted ? 'completed' : ''}">
-            <div class="investment-header">
-              <div class="plan-name">${investment.plan}</div>
-              <div class="investment-status ${statusClass}">${statusText}</div>
-            </div>
-            
-            <div class="investment-details">
-              <div class="detail-item">
-                <span class="detail-label">Amount</span>
-                <span class="detail-value">$${investment.amount.toLocaleString()}</span>
-              </div>
-              <div class="detail-item">
-                <span class="detail-label">Daily Rate</span>
-                <span class="detail-value">${(investment.dailyRate * 100).toFixed(2)}%</span>
-              </div>
-              <div class="detail-item">
-                <span class="detail-label">Profit Earned</span>
-                <span class="detail-value" style="color: var(--success);">$${profitEarned.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
-              </div>
-              <div class="detail-item">
-                <span class="detail-label">Capital Return</span>
-                <span class="detail-value" style="color: ${capitalReturned ? 'var(--success)' : 'var(--warning)'};">${capitalReturned ? '✅ Returned' : '⏳ Pending'}</span>
-              </div>
-            </div>
-            
-            ${isActive ? `
-            <div class="progress-container">
-              <div class="progress-label">
-                <span>Progress: ${daysCompleted}/${totalDays} days</span>
-                <span>${remainingDays} days remaining</span>
-              </div>
-              <div class="progress-bar">
-                <div class="progress-fill" style="width: ${progressPercent}%"></div>
-              </div>
-            </div>
-            ` : ''}
-            
-            ${isCompleted ? `
-            <div class="progress-container">
-              <div class="progress-label">
-                <span>✅ Investment Completed</span>
-                <span>${new Date(investment.completedAt || investment.endDate).toLocaleDateString()}</span>
-              </div>
-              <div class="progress-bar">
-                <div class="progress-fill completed-progress" style="width: 100%"></div>
-              </div>
-            </div>
-            ` : ''}
-          </div>
-        `;
-      });
-
-      container.innerHTML = html;
-    }
-
-    // Function to load investment status from API
-    async function loadInvestmentStatus() {
-      const token = localStorage.getItem('token');
-      if (!token) {
-        document.getElementById('currentInvestments').innerHTML = `
-          <div class="no-investments">
-            <p>Please login to view your investments</p>
-          </div>
-        `;
-        return;
-      }
-      
-      const container = document.getElementById('currentInvestments');
-      container.innerHTML = `<div class="loading">Loading investments...</div>`;
-      
-      try {
-        const res = await fetch(API_BASE + '/user/investments', {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        
-        if (!res.ok) {
-          throw new Error(`HTTP ${res.status}: ${res.statusText}`);
-        }
-        
-        const data = await res.json();
-        renderInvestmentStatus(data.investments || []);
-      } catch (err) {
-        console.error('Error loading investments:', err);
-        container.innerHTML = `
-          <div class="no-investments">
-            <p>Error loading investments</p>
-            <p class="muted">${err.message}</p>
-          </div>
-        `;
-      }
-    }
 
     function renderPlans() {
       const container = document.getElementById('plansContainer');
@@ -566,7 +284,6 @@
       document.getElementById('confirmBtn').disabled = false;
       document.getElementById('confirmBtn').innerText = "Confirm";
       document.getElementById('investModal').style.display = "flex";
-      // focus input for keyboard users
       setTimeout(()=> document.getElementById('investAmount').focus(), 100);
     }
 
@@ -575,15 +292,14 @@
       selectedPlan = null;
     }
 
-    // Close modal when clicking outside content or pressing Escape
     document.getElementById('investModal').addEventListener('click', (e) => {
       if (e.target === document.getElementById('investModal')) closeInvestModal();
     });
+    
     document.addEventListener('keydown', (e) => {
       if (e.key === 'Escape') closeInvestModal();
     });
 
-    // Safe parser for responses — supports JSON and non-JSON (HTML) error pages
     async function parseResponse(res) {
       const raw = await res.text();
       try {
@@ -638,7 +354,6 @@
         const parsed = await parseResponse(res);
 
         if (!parsed.ok) {
-          // Prefer server JSON error, otherwise show snippet of raw HTML/text
           if (parsed.data && (parsed.data.error || parsed.data.message)) {
             throw new Error(parsed.data.error || parsed.data.message);
           } else {
@@ -647,13 +362,10 @@
           }
         }
 
-        // Success - parsed.data should be JSON
         const successMsg = (parsed.data && (parsed.data.message || parsed.data.success)) || 'Investment started successfully!';
         alert(successMsg + '\n\n💰 Your capital will be returned in 30 days!\n📈 Daily profits will be added to your balance.');
         closeInvestModal();
-        
-        // Reload investment status to show the new investment
-        loadInvestmentStatus();
+        window.location.href = "dashboard.html";
         
       } catch (err) {
         console.error('Invest error:', err);
@@ -664,11 +376,7 @@
       }
     }
 
-    // Initial render
-    window.onload = function() {
-      renderPlans();
-      loadInvestmentStatus();
-    };
+    window.onload = renderPlans;
   </script>
 </body>
 </html>
