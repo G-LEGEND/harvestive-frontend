@@ -13,6 +13,7 @@
       margin: 0;
       padding: 0;
       min-height: 100vh;
+      padding-bottom: 80px; /* Add padding for fixed footer */
     }
 
     .deposit-container {
@@ -25,6 +26,7 @@
       border: 2px solid #d4af37;
       position: relative;
       overflow: hidden;
+      margin-bottom: 90px; /* Extra margin to prevent footer overlap */
     }
 
     .deposit-container::before {
@@ -73,6 +75,7 @@
 
     .input-group {
       position: relative;
+      margin-bottom: 15px;
     }
 
     .input-group i {
@@ -95,6 +98,11 @@
       border-left-color: #f5b7b1;
     }
 
+    .submit-btn-container {
+      margin-top: 30px;
+      margin-bottom: 20px;
+    }
+
     button {
       background: linear-gradient(135deg, #d4af37 0%, #c19b2c 100%);
       color: white;
@@ -104,9 +112,9 @@
       font-size: 16px;
       letter-spacing: 0.5px;
       padding: 16px;
-      margin-top: 25px;
       border-radius: 10px;
       box-shadow: 0 4px 15px rgba(212, 175, 55, 0.3);
+      transition: all 0.3s ease;
     }
 
     button:hover {
@@ -156,6 +164,9 @@
       border: 2px solid #d4af37;
       box-shadow: 0 20px 40px rgba(0,0,0,0.2);
       animation: slideUp 0.4s ease;
+      margin: 20px;
+      max-height: 80vh;
+      overflow-y: auto;
     }
 
     @keyframes slideUp {
@@ -175,10 +186,18 @@
       font-size: 24px;
     }
 
+    .modal-buttons {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-top: 20px;
+    }
+
     .modal button {
       width: auto;
       min-width: 120px;
-      margin: 10px;
+      margin: 0;
       display: inline-block;
       padding: 12px 25px;
     }
@@ -202,7 +221,7 @@
       padding: 12px 15px;
       border-radius: 10px;
       border: 1px solid #e9dba9;
-      margin-bottom: 15px;
+      margin: 10px 0 20px 0;
       transition: all 0.3s ease;
       min-height: 60px;
     }
@@ -223,34 +242,40 @@
       text-overflow: ellipsis;
       padding: 8px 0;
       letter-spacing: 0.3px;
+      cursor: pointer;
+      user-select: all;
     }
 
-    .wallet-text:hover {
+    .wallet-text.expanded {
       overflow: visible;
       white-space: normal;
       word-break: break-all;
       background: #fff;
-      padding: 8px;
-      border-radius: 6px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      padding: 12px;
+      border-radius: 8px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
       position: relative;
       z-index: 2;
+      border: 1px solid #d4af37;
     }
 
     .copy-btn {
       background: linear-gradient(135deg, #d4af37 0%, #c19b2c 100%);
       color: #fff;
       border: none;
-      padding: 8px 15px;
+      padding: 10px 18px;
       border-radius: 8px;
       cursor: pointer;
-      font-size: 13px;
+      font-size: 14px;
       font-weight: 600;
       transition: all 0.3s ease;
       white-space: nowrap;
       box-shadow: 0 2px 8px rgba(212, 175, 55, 0.3);
       flex-shrink: 0;
       margin-left: 10px;
+      display: flex;
+      align-items: center;
+      gap: 5px;
     }
 
     .copy-btn:hover {
@@ -263,6 +288,10 @@
       transform: translateY(0);
     }
 
+    .copy-btn.copied {
+      background: linear-gradient(135deg, #27ae60 0%, #229954 100%);
+    }
+
     .bottom-nav {
       position: fixed;
       bottom: 0;
@@ -273,7 +302,7 @@
       background: #fff;
       border-top: 2px solid #d4af37;
       padding: 12px 0;
-      box-shadow: 0 -4px 15px rgba(212, 175, 55, 0.1);
+      box-shadow: 0 -4px 15px rgba(212, 175, 55, 0.15);
       z-index: 100;
     }
 
@@ -400,7 +429,7 @@
       font-size: 24px;
       font-weight: bold;
       color: #d4af37;
-      margin: 10px 0;
+      margin: 10px 0 20px 0;
       padding: 10px;
       background: rgba(212, 175, 55, 0.1);
       border-radius: 10px;
@@ -459,24 +488,29 @@
       position: relative;
     }
 
-    .full-address-btn {
+    .address-label {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
+
+    .expand-btn {
       background: none;
       border: none;
       color: #d4af37;
       font-size: 12px;
-      padding: 5px 10px;
+      padding: 4px 8px;
       cursor: pointer;
+      text-decoration: underline;
       display: none;
-      position: absolute;
-      right: 10px;
-      top: 50%;
-      transform: translateY(-50%);
     }
 
     @media (max-width: 480px) {
       .deposit-container {
         margin: 15px;
         padding: 20px;
+        margin-bottom: 80px;
       }
       
       .wallet-text {
@@ -497,7 +531,28 @@
       
       .modal-content {
         padding: 20px;
-        margin: 20px;
+        margin: 15px;
+      }
+      
+      .modal-buttons {
+        flex-direction: column;
+      }
+      
+      .modal button {
+        width: 100%;
+      }
+    }
+
+    @media (max-width: 360px) {
+      .wallet-box {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      
+      .copy-btn {
+        margin-left: 0;
+        margin-top: 10px;
+        justify-content: center;
       }
     }
   </style>
@@ -521,7 +576,7 @@
         <select id="depositMethod" required>
           <option value="">Select a payment method</option>
         </select>
-        <div id="methodLoading" class="loading" style="display: none;"></div>
+        <div id="methodLoading" class="loading" style="display: none;">Loading payment methods...</div>
       </div>
 
       <div id="methodDetails" style="display:none;">
@@ -547,12 +602,17 @@
           <span id="displayAmount">$0</span>
         </div>
         
-        <p style="font-weight: 600; margin: 15px 0 8px; color: #555;">
-          <i class="fas fa-wallet"></i> Wallet Address:
-        </p>
+        <div class="address-label">
+          <p style="font-weight: 600; color: #555; margin: 0;">
+            <i class="fas fa-wallet"></i> Wallet Address:
+          </p>
+          <button type="button" class="expand-btn" onclick="toggleAddressExpand()">
+            <i class="fas fa-expand-alt"></i> Expand
+          </button>
+        </div>
         
         <div class="wallet-box">
-          <span id="walletAddress" class="wallet-text" title="Click to view full address"></span>
+          <span id="walletAddress" class="wallet-text" title="Click to expand/collapse"></span>
           <button type="button" class="copy-btn" onclick="copyAddress()">
             <i class="fas fa-copy"></i> Copy
           </button>
@@ -581,9 +641,11 @@
         <div class="note">Upload a clear screenshot of your payment transaction (Max 5MB)</div>
       </div>
 
-      <button type="button" id="submitBtn" onclick="openConfirmModal()">
-        <i class="fas fa-check-circle"></i> I Have Paid
-      </button>
+      <div class="submit-btn-container">
+        <button type="button" id="submitBtn" onclick="openConfirmModal()">
+          <i class="fas fa-check-circle"></i> I Have Paid
+        </button>
+      </div>
     </form>
   </div>
 
@@ -617,7 +679,7 @@
         </p>
       </div>
       
-      <div>
+      <div class="modal-buttons">
         <button onclick="submitDeposit()" id="confirmYesBtn">
           <i class="fas fa-paper-plane"></i> Confirm Payment
         </button>
@@ -650,6 +712,9 @@
       errorDiv.textContent = message;
       errorDiv.style.display = 'block';
       
+      // Scroll to error message
+      errorDiv.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      
       setTimeout(() => {
         errorDiv.style.display = 'none';
       }, 5000);
@@ -662,6 +727,9 @@
       errorDiv.style.display = 'none';
       successDiv.textContent = message;
       successDiv.style.display = 'block';
+      
+      // Scroll to success message
+      successDiv.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
       
       setTimeout(() => {
         successDiv.style.display = 'none';
@@ -683,9 +751,18 @@
           throw new Error(`Failed to load methods: ${res.status}`);
         }
         
-        const methods = await res.json();
-        depositMethods = methods.map(method => {
-          let id = method._id;
+        const data = await res.json();
+        
+        // Handle different response structures
+        let methods = data;
+        if (data.methods) {
+          methods = data.methods; // If response has {methods: [...]}
+        } else if (data.data) {
+          methods = data.data; // If response has {data: [...]}
+        }
+        
+        depositMethods = Array.isArray(methods) ? methods.map(method => {
+          let id = method._id || method.id;
           
           if (id && typeof id === 'object') {
             if (id.$oid) {
@@ -697,9 +774,9 @@
           
           return {
             ...method,
-            _id: id
+            _id: id || method._id
           };
-        });
+        }) : [];
 
         select.innerHTML = '<option value="">Select a payment method</option>';
         
@@ -712,13 +789,14 @@
         depositMethods.forEach(m => {
           const opt = document.createElement("option");
           opt.value = m._id;
-          opt.textContent = m.name;
+          opt.textContent = m.name || m.methodName || 'Unnamed Method';
           select.appendChild(opt);
         });
 
         select.disabled = false;
         
         if (depositMethods.length > 0) {
+          // Auto-select first method
           select.value = depositMethods[0]._id;
           updateMethodDetails();
         }
@@ -738,13 +816,27 @@
       const detailsDiv = document.getElementById('methodDetails');
       const qrImg = document.getElementById('walletQR');
       const qrError = document.getElementById('qrError');
+      const expandBtn = document.querySelector('.expand-btn');
 
       if (method) {
-        const walletAddress = method.address || 'Address not available';
-        document.getElementById('walletAddress').innerText = walletAddress;
+        // Handle different address field names
+        const walletAddress = method.address || method.walletAddress || method.paymentAddress || 'Address not available';
+        const walletElement = document.getElementById('walletAddress');
         
-        if (method.qr) {
-          qrImg.src = method.qr;
+        walletElement.innerText = walletAddress;
+        
+        // Show/hide expand button based on address length
+        if (walletAddress.length > 35 && walletAddress !== 'Address not available') {
+          expandBtn.style.display = 'inline-block';
+        } else {
+          expandBtn.style.display = 'none';
+          walletElement.classList.remove('expanded');
+        }
+        
+        // Handle QR code
+        const qrCode = method.qr || method.qrCode || method.qrUrl;
+        if (qrCode) {
+          qrImg.src = qrCode;
           qrImg.style.display = 'block';
           qrError.style.display = 'none';
         } else {
@@ -758,6 +850,19 @@
       }
     }
 
+    function toggleAddressExpand() {
+      const walletText = document.getElementById('walletAddress');
+      const expandBtn = document.querySelector('.expand-btn');
+      
+      if (walletText.classList.contains('expanded')) {
+        walletText.classList.remove('expanded');
+        expandBtn.innerHTML = '<i class="fas fa-expand-alt"></i> Expand';
+      } else {
+        walletText.classList.add('expanded');
+        expandBtn.innerHTML = '<i class="fas fa-compress-alt"></i> Collapse';
+      }
+    }
+
     function copyAddress() {
       const address = document.getElementById('walletAddress').innerText;
       if (!address || address === 'Address not available') {
@@ -767,16 +872,34 @@
       
       navigator.clipboard.writeText(address).then(() => {
         const copyBtn = document.querySelector('.copy-btn');
-        const originalText = copyBtn.innerHTML;
         copyBtn.innerHTML = '<i class="fas fa-check"></i> Copied!';
-        copyBtn.style.background = 'linear-gradient(135deg, #27ae60 0%, #229954 100%)';
+        copyBtn.classList.add('copied');
         
         setTimeout(() => {
-          copyBtn.innerHTML = originalText;
-          copyBtn.style.background = 'linear-gradient(135deg, #d4af37 0%, #c19b2c 100%)';
+          copyBtn.innerHTML = '<i class="fas fa-copy"></i> Copy';
+          copyBtn.classList.remove('copied');
         }, 2000);
       }).catch(err => {
-        showError('Failed to copy address');
+        console.error('Copy failed:', err);
+        // Fallback for browsers that don't support clipboard API
+        const textArea = document.createElement('textarea');
+        textArea.value = address;
+        document.body.appendChild(textArea);
+        textArea.select();
+        try {
+          document.execCommand('copy');
+          const copyBtn = document.querySelector('.copy-btn');
+          copyBtn.innerHTML = '<i class="fas fa-check"></i> Copied!';
+          copyBtn.classList.add('copied');
+          
+          setTimeout(() => {
+            copyBtn.innerHTML = '<i class="fas fa-copy"></i> Copy';
+            copyBtn.classList.remove('copied');
+          }, 2000);
+        } catch (err) {
+          showError('Failed to copy address');
+        }
+        document.body.removeChild(textArea);
       });
     }
 
@@ -787,6 +910,7 @@
       const methodName = methodSelect.options[methodSelect.selectedIndex].text;
       const screenshot = document.getElementById('screenshot').files[0];
 
+      // Validation
       if (!amount || isNaN(amount)) {
         showError('Please enter a valid amount');
         return;
@@ -825,14 +949,18 @@
         return;
       }
 
+      // Update modal content
       document.getElementById('confirmAmount').textContent = '$' + amount.toFixed(2);
       document.getElementById('confirmMethod').textContent = methodName;
       
+      // Show modal
       document.getElementById('confirmModal').style.display = 'flex';
+      document.body.style.overflow = 'hidden'; // Prevent scrolling behind modal
     }
 
     function closeConfirmModal() {
       document.getElementById('confirmModal').style.display = 'none';
+      document.body.style.overflow = 'auto'; // Restore scrolling
     }
 
     async function submitDeposit() {
@@ -880,14 +1008,20 @@
           showSuccess('✅ Deposit submitted successfully! Please wait for admin approval.');
           closeConfirmModal();
           
+          // Reset form
+          document.getElementById('depositForm').reset();
+          document.getElementById('selectedFileName').style.display = 'none';
+          document.getElementById('amountDisplay').style.display = 'none';
+          
           setTimeout(() => {
             window.location.href = 'dashboard.html';
           }, 2000);
         } else {
-          throw new Error(data.error || `Deposit failed: ${res.status}`);
+          throw new Error(data.error || data.message || `Deposit failed: ${res.status}`);
         }
         
       } catch (err) {
+        console.error('Deposit error:', err);
         showError(err.message || 'Error submitting deposit. Please try again.');
         closeConfirmModal();
       } finally {
@@ -903,6 +1037,7 @@
     window.onload = function() {
       loadDepositMethods();
       
+      // Amount input listener
       document.getElementById('depositAmount').addEventListener('input', function() {
         const amount = parseFloat(this.value);
         const amountDisplay = document.getElementById('amountDisplay');
@@ -913,12 +1048,14 @@
           this.style.borderColor = '#27ae60';
         } else {
           amountDisplay.style.display = 'none';
-          this.style.borderColor = amount === 0 ? '#e0d7c1' : '#e74c3c';
+          this.style.borderColor = amount === 0 || isNaN(amount) ? '#e0d7c1' : '#e74c3c';
         }
       });
       
+      // Method change listener
       document.getElementById('depositMethod').addEventListener('change', updateMethodDetails);
       
+      // File input listener
       document.getElementById('screenshot').addEventListener('change', function() {
         const fileName = this.files[0]?.name;
         const fileDisplay = document.getElementById('selectedFileName');
@@ -931,26 +1068,15 @@
         }
       });
       
-      // Add click to show full address functionality
-      const walletText = document.getElementById('walletAddress');
-      walletText.addEventListener('click', function() {
+      // Address click to expand
+      document.getElementById('walletAddress').addEventListener('click', function() {
         if (this.innerText && this.innerText !== 'Address not available') {
-          const fullAddress = this.innerText;
-          if (this.style.overflow === 'visible') {
-            this.style.overflow = 'hidden';
-            this.style.whiteSpace = 'nowrap';
-            this.style.textOverflow = 'ellipsis';
-            this.style.background = 'transparent';
-            this.style.boxShadow = 'none';
-            this.style.padding = '8px 0';
+          this.classList.toggle('expanded');
+          const expandBtn = document.querySelector('.expand-btn');
+          if (this.classList.contains('expanded')) {
+            expandBtn.innerHTML = '<i class="fas fa-compress-alt"></i> Collapse';
           } else {
-            this.style.overflow = 'visible';
-            this.style.whiteSpace = 'normal';
-            this.style.textOverflow = 'clip';
-            this.style.background = '#fff';
-            this.style.boxShadow = '0 2px 8px rgba(0,0,0,0.1)';
-            this.style.padding = '8px';
-            this.style.borderRadius = '6px';
+            expandBtn.innerHTML = '<i class="fas fa-expand-alt"></i> Expand';
           }
         }
       });
