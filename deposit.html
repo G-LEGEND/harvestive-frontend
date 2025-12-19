@@ -13,7 +13,6 @@
       margin: 0;
       padding: 0;
       min-height: 100vh;
-      padding-bottom: 70px; /* Add padding for bottom nav */
     }
 
     .deposit-container {
@@ -74,7 +73,6 @@
 
     .input-group {
       position: relative;
-      margin-bottom: 15px;
     }
 
     .input-group i {
@@ -106,8 +104,7 @@
       font-size: 16px;
       letter-spacing: 0.5px;
       padding: 16px;
-      margin-top: 20px;
-      margin-bottom: 10px; /* Reduced bottom margin */
+      margin-top: 25px;
       border-radius: 10px;
       box-shadow: 0 4px 15px rgba(212, 175, 55, 0.3);
     }
@@ -221,11 +218,23 @@
       flex: 1;
       font-family: 'Courier New', monospace;
       font-weight: 500;
-      word-break: break-all; /* Changed from nowrap to break-all */
+      white-space: nowrap;
       overflow: hidden;
+      text-overflow: ellipsis;
       padding: 8px 0;
       letter-spacing: 0.3px;
-      line-height: 1.4; /* Added line height for better readability */
+    }
+
+    .wallet-text:hover {
+      overflow: visible;
+      white-space: normal;
+      word-break: break-all;
+      background: #fff;
+      padding: 8px;
+      border-radius: 6px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      position: relative;
+      z-index: 2;
     }
 
     .copy-btn {
@@ -242,10 +251,6 @@
       box-shadow: 0 2px 8px rgba(212, 175, 55, 0.3);
       flex-shrink: 0;
       margin-left: 10px;
-      height: 36px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
     }
 
     .copy-btn:hover {
@@ -450,13 +455,27 @@
       display: none;
     }
 
+    .address-container {
+      position: relative;
+    }
+
+    .full-address-btn {
+      background: none;
+      border: none;
+      color: #d4af37;
+      font-size: 12px;
+      padding: 5px 10px;
+      cursor: pointer;
+      display: none;
+      position: absolute;
+      right: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+    }
+
     @media (max-width: 480px) {
-      body {
-        padding-bottom: 65px; /* Adjusted for mobile */
-      }
-      
       .deposit-container {
-        margin: 15px auto 80px auto; /* Added bottom margin for mobile */
+        margin: 15px;
         padding: 20px;
       }
       
@@ -479,24 +498,6 @@
       .modal-content {
         padding: 20px;
         margin: 20px;
-      }
-      
-      button {
-        margin-top: 15px;
-        margin-bottom: 5px;
-        padding: 14px;
-      }
-    }
-
-    @media (max-height: 700px) {
-      .deposit-container {
-        margin: 20px auto;
-        padding: 20px;
-      }
-      
-      button {
-        margin-top: 15px;
-        margin-bottom: 5px;
       }
     }
   </style>
@@ -551,7 +552,7 @@
         </p>
         
         <div class="wallet-box">
-          <span id="walletAddress" class="wallet-text" title="Click to copy address"></span>
+          <span id="walletAddress" class="wallet-text" title="Click to view full address"></span>
           <button type="button" class="copy-btn" onclick="copyAddress()">
             <i class="fas fa-copy"></i> Copy
           </button>
@@ -696,8 +697,7 @@
           
           return {
             ...method,
-            _id: id,
-            address: method.address || ''
+            _id: id
           };
         });
 
@@ -770,9 +770,6 @@
         const originalText = copyBtn.innerHTML;
         copyBtn.innerHTML = '<i class="fas fa-check"></i> Copied!';
         copyBtn.style.background = 'linear-gradient(135deg, #27ae60 0%, #229954 100%)';
-        
-        // Also show success message
-        showSuccess('Wallet address copied to clipboard!');
         
         setTimeout(() => {
           copyBtn.innerHTML = originalText;
@@ -934,11 +931,27 @@
         }
       });
       
-      // Add click to copy address functionality
+      // Add click to show full address functionality
       const walletText = document.getElementById('walletAddress');
       walletText.addEventListener('click', function() {
         if (this.innerText && this.innerText !== 'Address not available') {
-          copyAddress();
+          const fullAddress = this.innerText;
+          if (this.style.overflow === 'visible') {
+            this.style.overflow = 'hidden';
+            this.style.whiteSpace = 'nowrap';
+            this.style.textOverflow = 'ellipsis';
+            this.style.background = 'transparent';
+            this.style.boxShadow = 'none';
+            this.style.padding = '8px 0';
+          } else {
+            this.style.overflow = 'visible';
+            this.style.whiteSpace = 'normal';
+            this.style.textOverflow = 'clip';
+            this.style.background = '#fff';
+            this.style.boxShadow = '0 2px 8px rgba(0,0,0,0.1)';
+            this.style.padding = '8px';
+            this.style.borderRadius = '6px';
+          }
         }
       });
     };
