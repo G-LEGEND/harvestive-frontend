@@ -13,6 +13,7 @@
       --danger: #dc3545; 
       --success: #28a745;
       --info: #17a2b8;
+      --warning: #ffc107;
       --muted: #666;
       --border: #e0e0e0;
     }
@@ -32,7 +33,7 @@
     .cols{display:flex;gap:20px;flex-wrap:wrap;margin-bottom:24px;}
     .col{flex:1;min-width:260px;}
     form{display:flex;flex-direction:column;gap:12px;}
-    input[type="text"], input[type="password"], input[type="file"]{
+    input[type="text"], input[type="password"], input[type="file"], input[type="number"]{
       padding:12px;border:1px solid #e6e6e6;border-radius:8px;font-size:14px;width:100%;
     }
     button{
@@ -43,6 +44,7 @@
     .btn-danger{background:var(--danger);color:white;}
     .btn-success{background:var(--success);color:white;}
     .btn-info{background:var(--info);color:white;}
+    .btn-warning{background:var(--warning);color:#111;}
     .muted{color:var(--muted);font-size:14px;line-height:1.5;}
     .small{font-size:13px;color:#555;}
     .hidden{display:none;}
@@ -104,6 +106,7 @@
     .stat-card.success { border-left-color: var(--success); }
     .stat-card.info { border-left-color: var(--info); }
     .stat-card.danger { border-left-color: var(--danger); }
+    .stat-card.warning { border-left-color: var(--warning); }
     .stat-value {
       font-size: 28px;
       font-weight: 700;
@@ -148,9 +151,13 @@
       border-radius: 20px;
       font-size: 12px;
       font-weight: 600;
+      display: inline-block;
+      margin: 2px;
     }
     .status-pending { background: #fff3cd; color: #856404; }
     .status-approved { background: #d4edda; color: #155724; }
+    .status-blocked { background: #f8d7da; color: #721c24; }
+    .status-deleted { background: #d1ecf1; color: #0c5460; }
     
     /* Loading Spinner */
     .spinner {
@@ -191,6 +198,62 @@
       height: 18px;
     }
     
+    /* Action Buttons */
+    .action-buttons {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+    .action-btn {
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      transition: all 0.2s;
+    }
+    .action-btn:hover {
+      transform: translateY(-1px);
+      opacity: 0.9;
+    }
+    
+    /* Modal */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.5);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+    }
+    .modal-content {
+      background: white;
+      border-radius: 12px;
+      padding: 24px;
+      max-width: 500px;
+      width: 90%;
+      max-height: 80vh;
+      overflow-y: auto;
+    }
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+    .modal-close {
+      background: none;
+      border: none;
+      font-size: 24px;
+      cursor: pointer;
+      color: #666;
+    }
+    
     /* Mobile Responsive */
     @media (max-width: 768px) {
       .admin-nav {
@@ -202,6 +265,9 @@
       .top-row {
         flex-direction: column;
         align-items: flex-start;
+      }
+      .action-buttons {
+        flex-direction: column;
       }
     }
   </style>
@@ -244,6 +310,9 @@
         <a href="admin-approve.html" class="nav-btn">
           <i class="fas fa-check-circle"></i> Approve Deposits
         </a>
+        <a href="#" class="nav-btn" onclick="showSection('withdrawMethods')">
+          <i class="fas fa-money-bill-wave"></i> Withdraw Methods
+        </a>
         <a href="#" class="nav-btn" onclick="showSection('withdrawals')">
           <i class="fas fa-money-bill"></i> Withdrawals
         </a>
@@ -282,6 +351,9 @@
                 </button>
                 <button onclick="showSection('depositMethods')" class="btn-info">
                   <i class="fas fa-plus"></i> Add Deposit Method
+                </button>
+                <button onclick="showSection('withdrawMethods')" class="btn-info">
+                  <i class="fas fa-plus"></i> Add Withdraw Method
                 </button>
                 <button onclick="showSection('users')" class="btn-info">
                   <i class="fas fa-user-cog"></i> Manage Users
@@ -347,6 +419,51 @@
         </div>
       </div>
 
+      <!-- Withdraw Methods Section -->
+      <div id="withdrawMethodsSection" class="section hidden">
+        <div class="top-row">
+          <h2>Withdraw Methods Management</h2>
+          <button onclick="loadWithdrawMethods()">
+            <i class="fas fa-sync-alt"></i> Refresh Methods
+          </button>
+        </div>
+
+        <div class="cols">
+          <div class="col">
+            <div class="card">
+              <h3>Add New Withdraw Method</h3>
+              <form id="addWithdrawMethodForm">
+                <label class="small">Method Name (BTC, USDT, Bank Transfer...)</label>
+                <input name="name" type="text" placeholder="BTC" required />
+
+                <label class="small">Minimum Amount ($)</label>
+                <input name="min" type="number" placeholder="20000" required min="1" />
+
+                <label class="small">Fee ($ or %)</label>
+                <input name="fee" type="number" placeholder="0.001" required step="0.001" />
+
+                <div style="display:flex;gap:8px;margin-top:16px">
+                  <button type="submit">Add Method</button>
+                  <button type="button" onclick="loadWithdrawMethods()" style="background:#eee;color:#222">
+                    <i class="fas fa-redo"></i> Refresh
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+
+          <div class="col">
+            <div class="card">
+              <h3>Current Withdraw Methods</h3>
+              <div class="note">These methods are visible to users for withdrawals</div>
+              <div id="withdrawMethodList" class="method-list">
+                Loading methods...
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <!-- Users Section -->
       <div id="usersSection" class="section hidden">
         <div class="card">
@@ -368,11 +485,12 @@
                   <th>Total Deposit</th>
                   <th>Total Withdraw</th>
                   <th>Joined</th>
+                  <th>Status</th>
                   <th>Actions</th>
                 </tr>
               </thead>
               <tbody id="usersTableBody">
-                <tr><td colspan="7" style="text-align: center;">Loading users...</td></tr>
+                <tr><td colspan="8" style="text-align: center;">Loading users...</td></tr>
               </tbody>
             </table>
           </div>
@@ -413,6 +531,19 @@
     </div>
   </div>
 
+  <!-- User Details Modal -->
+  <div id="userModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 id="modalTitle">User Details</h3>
+        <button class="modal-close" onclick="closeModal()">&times;</button>
+      </div>
+      <div id="modalContent">
+        Loading user details...
+      </div>
+    </div>
+  </div>
+
   <script>
     const API_BASE = 'https://harvestive-co-backend.onrender.com';
     let adminToken = localStorage.getItem('adminToken');
@@ -423,12 +554,16 @@
     const loginForm = document.getElementById('loginForm');
     const logoutBtn = document.getElementById('logoutBtn');
     const addMethodForm = document.getElementById('addMethodForm');
+    const addWithdrawMethodForm = document.getElementById('addWithdrawMethodForm');
     const methodList = document.getElementById('methodList');
+    const withdrawMethodList = document.getElementById('withdrawMethodList');
+    const userModal = document.getElementById('userModal');
     
     // Sections
     const sections = {
       dashboard: document.getElementById('dashboardSection'),
       depositMethods: document.getElementById('depositMethodsSection'),
+      withdrawMethods: document.getElementById('withdrawMethodsSection'),
       users: document.getElementById('usersSection'),
       withdrawals: document.getElementById('withdrawalsSection')
     };
@@ -443,9 +578,11 @@
       
       // Show selected section
       Object.values(sections).forEach(section => {
-        section.classList.add('hidden');
+        section?.classList.add('hidden');
       });
-      sections[sectionName].classList.remove('hidden');
+      if (sections[sectionName]) {
+        sections[sectionName].classList.remove('hidden');
+      }
       
       // Load data for section
       switch(sectionName) {
@@ -461,6 +598,9 @@
         case 'depositMethods':
           loadMethods();
           break;
+        case 'withdrawMethods':
+          loadWithdrawMethods();
+          break;
       }
     }
 
@@ -471,6 +611,10 @@
 
     function formatCurrency(amount) {
       return '$' + parseFloat(amount).toFixed(2);
+    }
+
+    function closeModal() {
+      userModal.style.display = 'none';
     }
 
     // Login
@@ -565,6 +709,11 @@
             <div class="stat-value">${stats.pendingWithdrawals}</div>
             <div class="small">Needs approval</div>
           </div>
+          <div class="stat-card warning">
+            <div class="stat-label"><i class="fas fa-user-slash stat-icon"></i> Blocked Users</div>
+            <div class="stat-value">${stats.blockedUsers || 0}</div>
+            <div class="small">Accounts disabled</div>
+          </div>
         `;
         
         statsLoading.style.display = 'none';
@@ -590,7 +739,7 @@
       const usersTableBody = document.getElementById('usersTableBody');
       const usersLoading = document.getElementById('usersLoading');
       
-      usersTableBody.innerHTML = '<tr><td colspan="7" style="text-align: center;">Loading...</td></tr>';
+      usersTableBody.innerHTML = '<tr><td colspan="8" style="text-align: center;">Loading...</td></tr>';
       usersLoading.style.display = 'block';
       
       try {
@@ -604,30 +753,49 @@
         usersTableBody.innerHTML = '';
         users.forEach(user => {
           const row = document.createElement('tr');
+          const statusBadges = [];
+          if (user.blocked) statusBadges.push('<span class="status-badge status-blocked">BLOCKED</span>');
+          if (user.deleted) statusBadges.push('<span class="status-badge status-deleted">DELETED</span>');
+          
           row.innerHTML = `
-            <td><strong>${user.firstName || ''} ${user.lastName || ''}</strong><br>
-                <small class="small">@${user.username || 'N/A'}</small></td>
+            <td>
+              <strong>${user.firstName || ''} ${user.lastName || ''}</strong><br>
+              <small class="small">@${user.username || 'N/A'}</small>
+            </td>
             <td>${user.email || 'N/A'}</td>
             <td><strong>${formatCurrency(user.balance || 0)}</strong></td>
             <td>${formatCurrency(user.totalDeposit || 0)}</td>
             <td>${formatCurrency(user.totalWithdraw || 0)}</td>
             <td>${new Date(user.createdAt).toLocaleDateString()}</td>
+            <td>${statusBadges.join(' ')}</td>
             <td>
-              <button class="small" onclick="viewUser('${user._id}')" style="background: #6c757d; color: white; padding: 4px 8px; font-size: 12px;">
-                <i class="fas fa-eye"></i> View
-              </button>
+              <div class="action-buttons">
+                <button class="action-btn" style="background: #6c757d; color: white;" onclick="viewUserDetails('${user._id}')">
+                  <i class="fas fa-eye"></i> View
+                </button>
+                ${!user.deleted ? `
+                  <button class="action-btn ${user.blocked ? 'btn-success' : 'btn-warning'}" 
+                          onclick="toggleBlockUser('${user._id}', '${user.firstName || user.email}', ${user.blocked || false})">
+                    <i class="fas ${user.blocked ? 'fa-unlock' : 'fa-ban'}"></i> ${user.blocked ? 'Unblock' : 'Block'}
+                  </button>
+                  <button class="action-btn btn-danger" 
+                          onclick="deleteUser('${user._id}', '${user.firstName || user.email}')">
+                    <i class="fas fa-trash"></i> Delete
+                  </button>
+                ` : ''}
+              </div>
             </td>
           `;
           usersTableBody.appendChild(row);
         });
         
         if (users.length === 0) {
-          usersTableBody.innerHTML = '<tr><td colspan="7" style="text-align: center;">No users found</td></tr>';
+          usersTableBody.innerHTML = '<tr><td colspan="8" style="text-align: center;">No users found</td></tr>';
         }
         
       } catch (err) {
         console.error(err);
-        usersTableBody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: red;">Error loading users</td></tr>';
+        usersTableBody.innerHTML = '<tr><td colspan="8" style="text-align: center; color: red;">Error loading users</td></tr>';
       } finally {
         usersLoading.style.display = 'none';
       }
@@ -666,7 +834,7 @@
             <td>${formatDate(w.createdAt)}</td>
             <td>
               ${w.status === 'pending' ? `
-                <button class="small btn-success" onclick="approveWithdrawal('${w._id}')" style="padding: 4px 8px; font-size: 12px;">
+                <button class="action-btn btn-success" onclick="approveWithdrawal('${w._id}')">
                   <i class="fas fa-check"></i> Approve
                 </button>
               ` : 'Approved'}
@@ -735,8 +903,8 @@
                 <div class="small">${m.address || ''}</div>
               </div>
             </div>
-            <div style="display:flex;gap:8px;align-items:center">
-              <button class="btn-danger" onclick="deleteMethod('${m._id}')" style="padding: 8px 12px;">
+            <div class="action-buttons">
+              <button class="action-btn btn-danger" onclick="deleteMethod('${m._id}')">
                 <i class="fas fa-trash"></i> Delete
               </button>
             </div>
@@ -749,8 +917,223 @@
       }
     }
 
+    // Withdraw Methods
+    addWithdrawMethodForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (!adminToken) return alert('Please login first');
+
+      const formData = new FormData(addWithdrawMethodForm);
+      const data = {
+        name: formData.get('name'),
+        min: parseFloat(formData.get('min')),
+        fee: parseFloat(formData.get('fee'))
+      };
+
+      try {
+        const res = await fetch(`${API_BASE}/admin/withdraw-methods`, {
+          method: 'POST',
+          headers: { 
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${adminToken}` 
+          },
+          body: JSON.stringify(data)
+        });
+        
+        const result = await res.json();
+        if (!res.ok) throw new Error(result.error || 'Failed to add method');
+        
+        alert('✅ Withdraw method added successfully');
+        addWithdrawMethodForm.reset();
+        loadWithdrawMethods();
+      } catch (err) {
+        console.error(err);
+        alert('Error adding method: ' + err.message);
+      }
+    });
+
+    async function loadWithdrawMethods() {
+      withdrawMethodList.innerHTML = 'Loading...';
+      try {
+        const res = await fetch(`${API_BASE}/admin/withdraw-methods`, {
+          headers: { Authorization: `Bearer ${adminToken}` }
+        });
+        
+        if (!res.ok) throw new Error('Failed to load methods');
+        const data = await res.json();
+        
+        withdrawMethodList.innerHTML = '';
+        if (!data.length) {
+          withdrawMethodList.innerHTML = '<div class="muted small">No methods found</div>';
+          return;
+        }
+        
+        data.forEach(m => {
+          const div = document.createElement('div');
+          div.className = 'method-item';
+          div.innerHTML = `
+            <div class="method-info">
+              <div>
+                <div><strong>${m.name}</strong></div>
+                <div class="small">Min: ${formatCurrency(m.min)} | Fee: ${m.fee}</div>
+                <div class="small">${m.enabled ? '🟢 Enabled' : '🔴 Disabled'}</div>
+              </div>
+            </div>
+            <div class="action-buttons">
+              <button class="action-btn ${m.enabled ? 'btn-warning' : 'btn-success'}" 
+                      onclick="toggleWithdrawMethod('${m._id}', ${m.enabled})">
+                <i class="fas ${m.enabled ? 'fa-toggle-off' : 'fa-toggle-on'}"></i> ${m.enabled ? 'Disable' : 'Enable'}
+              </button>
+              <button class="action-btn btn-danger" onclick="deleteWithdrawMethod('${m._id}')">
+                <i class="fas fa-trash"></i> Delete
+              </button>
+            </div>
+          `;
+          withdrawMethodList.appendChild(div);
+        });
+      } catch (err) {
+        console.error(err);
+        withdrawMethodList.innerHTML = '<div class="muted small">Error loading methods</div>';
+      }
+    }
+
+    // Delete user permanently
+    async function deleteUser(userId, userName) {
+      if (!confirm(`Are you sure you want to PERMANENTLY delete user "${userName}"?\n\n⚠️ WARNING: This action cannot be undone!\n• All user data will be deleted forever\n• Deposits, withdrawals, and investments will be removed\n• User account will be completely erased`)) {
+        return;
+      }
+
+      if (!adminToken) return alert('Please login first');
+
+      try {
+        const res = await fetch(`${API_BASE}/admin/users/${userId}`, {
+          method: 'DELETE',
+          headers: { Authorization: `Bearer ${adminToken}` }
+        });
+        
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Failed to delete user');
+        
+        alert('✅ User deleted permanently! All user data has been removed.');
+        loadUsers(); // Refresh user list
+        loadStats(); // Refresh stats
+      } catch (err) {
+        console.error('Error deleting user:', err);
+        alert('Error deleting user: ' + err.message);
+      }
+    }
+
+    // Block/Unblock user
+    async function toggleBlockUser(userId, userName, currentlyBlocked) {
+      const action = currentlyBlocked ? 'unblock' : 'block';
+      const message = currentlyBlocked 
+        ? `Unblock user "${userName}"?\n\nThey will be able to login and use the platform again.`
+        : `Block user "${userName}"?\n\nThey will NOT be able to:\n• Login to their account\n• Make deposits\n• Request withdrawals\n• Invest in plans`;
+
+      if (!confirm(message)) {
+        return;
+      }
+
+      if (!adminToken) return alert('Please login first');
+
+      try {
+        const res = await fetch(`${API_BASE}/admin/users/${userId}/block`, {
+          method: 'PUT',
+          headers: { 
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${adminToken}` 
+          },
+          body: JSON.stringify({ blocked: !currentlyBlocked })
+        });
+        
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Failed to update user');
+        
+        alert(`✅ User ${action}ed successfully!`);
+        loadUsers(); // Refresh user list
+        loadStats(); // Refresh stats
+      } catch (err) {
+        console.error('Error updating user:', err);
+        alert('Error updating user: ' + err.message);
+      }
+    }
+
+    // View user details
+    async function viewUserDetails(userId) {
+      if (!adminToken) return;
+      
+      document.getElementById('modalTitle').textContent = 'User Details';
+      document.getElementById('modalContent').innerHTML = '<div class="spinner"></div>';
+      userModal.style.display = 'flex';
+      
+      try {
+        const res = await fetch(`${API_BASE}/admin/users`, {
+          headers: { Authorization: `Bearer ${adminToken}` }
+        });
+        
+        if (!res.ok) throw new Error('Failed to load users');
+        const users = await res.json();
+        
+        const user = users.find(u => u._id === userId);
+        if (!user) {
+          document.getElementById('modalContent').innerHTML = '<div class="muted">User not found</div>';
+          return;
+        }
+        
+        const userDetails = `
+          <div style="display: grid; gap: 16px;">
+            <div>
+              <strong>Personal Information</strong>
+              <div style="background: #f8f9fa; padding: 12px; border-radius: 8px; margin-top: 8px;">
+                <div><strong>Name:</strong> ${user.firstName || ''} ${user.lastName || ''}</div>
+                <div><strong>Username:</strong> ${user.username || 'N/A'}</div>
+                <div><strong>Email:</strong> ${user.email || 'N/A'}</div>
+                <div><strong>Joined:</strong> ${new Date(user.createdAt).toLocaleString()}</div>
+                <div><strong>Last Login:</strong> ${user.lastLogin ? new Date(user.lastLogin).toLocaleString() : 'Never'}</div>
+              </div>
+            </div>
+            
+            <div>
+              <strong>Financial Information</strong>
+              <div style="background: #f8f9fa; padding: 12px; border-radius: 8px; margin-top: 8px;">
+                <div><strong>Current Balance:</strong> ${formatCurrency(user.balance || 0)}</div>
+                <div><strong>Total Deposits:</strong> ${formatCurrency(user.totalDeposit || 0)}</div>
+                <div><strong>Total Withdrawals:</strong> ${formatCurrency(user.totalWithdraw || 0)}</div>
+                <div><strong>Current Investments:</strong> ${formatCurrency(user.currentInvest || 0)}</div>
+              </div>
+            </div>
+            
+            <div>
+              <strong>Account Status</strong>
+              <div style="background: #f8f9fa; padding: 12px; border-radius: 8px; margin-top: 8px;">
+                <div><strong>Blocked:</strong> ${user.blocked ? '🔴 Yes' : '🟢 No'}</div>
+                <div><strong>Deleted:</strong> ${user.deleted ? '🔴 Yes' : '🟢 No'}</div>
+              </div>
+            </div>
+            
+            <div style="display: flex; gap: 10px; margin-top: 20px;">
+              <button class="action-btn ${user.blocked ? 'btn-success' : 'btn-warning'}" 
+                      onclick="toggleBlockUser('${user._id}', '${user.firstName || user.email}', ${user.blocked || false}); closeModal();">
+                <i class="fas ${user.blocked ? 'fa-unlock' : 'fa-ban'}"></i> ${user.blocked ? 'Unblock User' : 'Block User'}
+              </button>
+              ${!user.deleted ? `
+                <button class="action-btn btn-danger" 
+                        onclick="deleteUser('${user._id}', '${user.firstName || user.email}'); closeModal();">
+                  <i class="fas fa-trash"></i> Delete User
+                </button>
+              ` : ''}
+            </div>
+          </div>
+        `;
+        
+        document.getElementById('modalContent').innerHTML = userDetails;
+      } catch (err) {
+        console.error(err);
+        document.getElementById('modalContent').innerHTML = '<div class="muted">Error loading user details</div>';
+      }
+    }
+
     async function deleteMethod(id) {
-      if (!confirm('Are you sure you want to delete this method?')) return;
+      if (!confirm('Are you sure you want to delete this deposit method?')) return;
       if (!adminToken) return alert('Please login first');
 
       try {
@@ -767,6 +1150,49 @@
       } catch (err) {
         console.error(err);
         alert('Error deleting method: ' + err.message);
+      }
+    }
+
+    async function deleteWithdrawMethod(id) {
+      if (!confirm('Are you sure you want to delete this withdraw method?')) return;
+      if (!adminToken) return alert('Please login first');
+
+      try {
+        const res = await fetch(`${API_BASE}/admin/withdraw-methods/${id}`, {
+          method: 'DELETE',
+          headers: { Authorization: `Bearer ${adminToken}` }
+        });
+        
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Failed to delete');
+        
+        alert('✅ Withdraw method deleted');
+        loadWithdrawMethods();
+      } catch (err) {
+        console.error(err);
+        alert('Error deleting method: ' + err.message);
+      }
+    }
+
+    async function toggleWithdrawMethod(id, enabled) {
+      const action = enabled ? 'disable' : 'enable';
+      if (!confirm(`Are you sure you want to ${action} this withdraw method?`)) return;
+      if (!adminToken) return alert('Please login first');
+
+      try {
+        const res = await fetch(`${API_BASE}/admin/withdraw-methods/${id}/toggle`, {
+          method: 'PUT',
+          headers: { Authorization: `Bearer ${adminToken}` }
+        });
+        
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Failed to toggle');
+        
+        alert(`✅ Method ${action}d`);
+        loadWithdrawMethods();
+      } catch (err) {
+        console.error(err);
+        alert('Error toggling method: ' + err.message);
       }
     }
 
@@ -792,20 +1218,21 @@
       }
     }
 
-    function viewUser(userId) {
-      alert(`View user details for ID: ${userId}\n\nFeature to be implemented.`);
-      // Could open a modal with detailed user info
-    }
-
     // Make functions globally available
     window.deleteMethod = deleteMethod;
+    window.deleteWithdrawMethod = deleteWithdrawMethod;
+    window.toggleWithdrawMethod = toggleWithdrawMethod;
     window.loadMethods = loadMethods;
+    window.loadWithdrawMethods = loadWithdrawMethods;
     window.loadStats = loadStats;
     window.loadUsers = loadUsers;
     window.loadWithdrawals = loadWithdrawals;
     window.showSection = showSection;
     window.approveWithdrawal = approveWithdrawal;
-    window.viewUser = viewUser;
+    window.viewUserDetails = viewUserDetails;
+    window.toggleBlockUser = toggleBlockUser;
+    window.deleteUser = deleteUser;
+    window.closeModal = closeModal;
   </script>
 </body>
 </html>
