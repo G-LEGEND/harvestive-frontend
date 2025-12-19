@@ -204,6 +204,7 @@
       border: 1px solid #e9dba9;
       margin-bottom: 15px;
       transition: all 0.3s ease;
+      min-height: 60px;
     }
 
     .wallet-box:hover {
@@ -212,13 +213,28 @@
     }
 
     .wallet-text {
-      word-break: break-all;
       font-size: 14px;
       color: #333;
       flex: 1;
-      margin-right: 15px;
       font-family: 'Courier New', monospace;
       font-weight: 500;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      padding: 8px 0;
+      letter-spacing: 0.3px;
+    }
+
+    .wallet-text:hover {
+      overflow: visible;
+      white-space: normal;
+      word-break: break-all;
+      background: #fff;
+      padding: 8px;
+      border-radius: 6px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      position: relative;
+      z-index: 2;
     }
 
     .copy-btn {
@@ -233,6 +249,8 @@
       transition: all 0.3s ease;
       white-space: nowrap;
       box-shadow: 0 2px 8px rgba(212, 175, 55, 0.3);
+      flex-shrink: 0;
+      margin-left: 10px;
     }
 
     .copy-btn:hover {
@@ -437,10 +455,32 @@
       display: none;
     }
 
+    .address-container {
+      position: relative;
+    }
+
+    .full-address-btn {
+      background: none;
+      border: none;
+      color: #d4af37;
+      font-size: 12px;
+      padding: 5px 10px;
+      cursor: pointer;
+      display: none;
+      position: absolute;
+      right: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+    }
+
     @media (max-width: 480px) {
       .deposit-container {
         margin: 15px;
         padding: 20px;
+      }
+      
+      .wallet-text {
+        font-size: 13px;
       }
       
       .bottom-nav {
@@ -510,8 +550,9 @@
         <p style="font-weight: 600; margin: 15px 0 8px; color: #555;">
           <i class="fas fa-wallet"></i> Wallet Address:
         </p>
+        
         <div class="wallet-box">
-          <span id="walletAddress" class="wallet-text"></span>
+          <span id="walletAddress" class="wallet-text" title="Click to view full address"></span>
           <button type="button" class="copy-btn" onclick="copyAddress()">
             <i class="fas fa-copy"></i> Copy
           </button>
@@ -677,7 +718,6 @@
 
         select.disabled = false;
         
-        // Auto-select first method if available
         if (depositMethods.length > 0) {
           select.value = depositMethods[0]._id;
           updateMethodDetails();
@@ -700,7 +740,8 @@
       const qrError = document.getElementById('qrError');
 
       if (method) {
-        document.getElementById('walletAddress').innerText = method.address || 'Address not available';
+        const walletAddress = method.address || 'Address not available';
+        document.getElementById('walletAddress').innerText = walletAddress;
         
         if (method.qr) {
           qrImg.src = method.qr;
@@ -746,7 +787,6 @@
       const methodName = methodSelect.options[methodSelect.selectedIndex].text;
       const screenshot = document.getElementById('screenshot').files[0];
 
-      // Validation
       if (!amount || isNaN(amount)) {
         showError('Please enter a valid amount');
         return;
@@ -767,13 +807,11 @@
         return;
       }
 
-      // Check file size
       if (screenshot.size > 5 * 1024 * 1024) {
         showError('File too large. Maximum size is 5MB');
         return;
       }
 
-      // Check file type
       const validTypes = ['image/jpeg', 'image/png', 'image/jpg', 'image/webp'];
       if (!validTypes.includes(screenshot.type)) {
         showError('Please upload a valid image (JPEG, PNG, or WebP)');
@@ -787,7 +825,6 @@
         return;
       }
 
-      // Update modal content
       document.getElementById('confirmAmount').textContent = '$' + amount.toFixed(2);
       document.getElementById('confirmMethod').textContent = methodName;
       
@@ -866,7 +903,6 @@
     window.onload = function() {
       loadDepositMethods();
       
-      // Update amount display
       document.getElementById('depositAmount').addEventListener('input', function() {
         const amount = parseFloat(this.value);
         const amountDisplay = document.getElementById('amountDisplay');
@@ -881,10 +917,8 @@
         }
       });
       
-      // Update method details when method changes
       document.getElementById('depositMethod').addEventListener('change', updateMethodDetails);
       
-      // Show selected file name
       document.getElementById('screenshot').addEventListener('change', function() {
         const fileName = this.files[0]?.name;
         const fileDisplay = document.getElementById('selectedFileName');
@@ -894,6 +928,30 @@
           fileDisplay.style.display = 'block';
         } else {
           fileDisplay.style.display = 'none';
+        }
+      });
+      
+      // Add click to show full address functionality
+      const walletText = document.getElementById('walletAddress');
+      walletText.addEventListener('click', function() {
+        if (this.innerText && this.innerText !== 'Address not available') {
+          const fullAddress = this.innerText;
+          if (this.style.overflow === 'visible') {
+            this.style.overflow = 'hidden';
+            this.style.whiteSpace = 'nowrap';
+            this.style.textOverflow = 'ellipsis';
+            this.style.background = 'transparent';
+            this.style.boxShadow = 'none';
+            this.style.padding = '8px 0';
+          } else {
+            this.style.overflow = 'visible';
+            this.style.whiteSpace = 'normal';
+            this.style.textOverflow = 'clip';
+            this.style.background = '#fff';
+            this.style.boxShadow = '0 2px 8px rgba(0,0,0,0.1)';
+            this.style.padding = '8px';
+            this.style.borderRadius = '6px';
+          }
         }
       });
     };
