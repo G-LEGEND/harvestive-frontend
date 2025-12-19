@@ -7,123 +7,208 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <style>
     body {
-      font-family: Arial, sans-serif;
-      background: #fff;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #f9f7f0 0%, #f5f2e9 100%);
       color: #333;
       margin: 0;
       padding: 0;
+      min-height: 100vh;
     }
 
     .deposit-container {
-      max-width: 400px;
-      margin: 50px auto;
-      padding: 25px;
+      max-width: 450px;
+      margin: 30px auto;
+      padding: 30px;
       background: #fff;
-      border-radius: 12px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-      border: 2px solid #d4af37; /* gold border */
+      border-radius: 16px;
+      box-shadow: 0 8px 30px rgba(212, 175, 55, 0.15);
+      border: 2px solid #d4af37;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .deposit-container::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: linear-gradient(90deg, #d4af37 0%, #f5d547 100%);
     }
 
     h2 {
       text-align: center;
       color: #d4af37;
-      margin-bottom: 20px;
+      margin-bottom: 25px;
+      font-size: 28px;
+      font-weight: 700;
+      text-shadow: 1px 1px 3px rgba(0,0,0,0.1);
     }
 
     label {
       display: block;
-      margin-top: 15px;
-      font-weight: bold;
+      margin-top: 20px;
+      font-weight: 600;
       color: #555;
+      font-size: 15px;
     }
 
     input, select, button {
       width: 100%;
-      padding: 12px;
+      padding: 14px;
       margin-top: 8px;
-      border: 1px solid #ccc;
-      border-radius: 8px;
+      border: 1px solid #e0d7c1;
+      border-radius: 10px;
       font-size: 15px;
+      transition: all 0.3s ease;
+      box-sizing: border-box;
     }
 
     input:focus, select:focus {
       border-color: #d4af37;
       outline: none;
+      box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.2);
+    }
+
+    .input-group {
+      position: relative;
+    }
+
+    .input-group i {
+      position: absolute;
+      right: 15px;
+      top: 42px;
+      color: #d4af37;
     }
 
     .note {
       font-size: 13px;
       color: #b59428;
-      margin-top: 4px;
+      margin-top: 6px;
+      padding-left: 8px;
+      border-left: 2px solid #e9dba9;
     }
 
     .note.error {
       color: #e74c3c;
+      border-left-color: #f5b7b1;
     }
 
     button {
-      background: #d4af37;
+      background: linear-gradient(135deg, #d4af37 0%, #c19b2c 100%);
       color: white;
       border: none;
       cursor: pointer;
-      font-weight: bold;
-      transition: 0.3s;
+      font-weight: 600;
+      font-size: 16px;
+      letter-spacing: 0.5px;
+      padding: 16px;
+      margin-top: 25px;
+      border-radius: 10px;
+      box-shadow: 0 4px 15px rgba(212, 175, 55, 0.3);
     }
 
     button:hover {
-      background: #b59428;
+      background: linear-gradient(135deg, #c19b2c 0%, #a8841f 100%);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(212, 175, 55, 0.4);
+    }
+
+    button:active {
+      transform: translateY(0);
     }
 
     button:disabled {
       background: #cccccc;
       cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
     }
 
     .modal {
       display: none;
       position: fixed;
-      z-index: 10;
+      z-index: 1000;
       left: 0;
       top: 0;
       width: 100%;
       height: 100%;
-      background: rgba(0,0,0,0.6);
+      background: rgba(0,0,0,0.7);
       justify-content: center;
       align-items: center;
+      backdrop-filter: blur(5px);
+      animation: fadeIn 0.3s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
     }
 
     .modal-content {
       background: #fff;
-      padding: 25px;
-      border-radius: 12px;
+      padding: 30px;
+      border-radius: 16px;
       text-align: center;
       width: 90%;
       max-width: 400px;
       border: 2px solid #d4af37;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+      animation: slideUp 0.4s ease;
+    }
+
+    @keyframes slideUp {
+      from { 
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to { 
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .modal-content h3 {
+      color: #d4af37;
+      margin-top: 0;
+      font-size: 24px;
     }
 
     .modal button {
       width: auto;
+      min-width: 120px;
       margin: 10px;
+      display: inline-block;
+      padding: 12px 25px;
     }
 
     .qr-img {
-      max-width: 140px;
-      margin: 10px auto;
+      width: 180px;
+      height: 180px;
+      margin: 15px auto;
       display: block;
-      border: 2px solid #d4af37;
-      border-radius: 8px;
+      border: 3px solid #d4af37;
+      border-radius: 10px;
+      padding: 10px;
+      background: white;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
     }
 
     .wallet-box {
       display: flex;
       align-items: center;
-      justify-content: space-between;
-      background: #f9f9f9;
-      padding: 8px 10px;
-      border-radius: 6px;
-      border: 1px solid #ddd;
-      margin-bottom: 10px;
+      background: #fefcf3;
+      padding: 12px 15px;
+      border-radius: 10px;
+      border: 1px solid #e9dba9;
+      margin-bottom: 15px;
+      transition: all 0.3s ease;
+    }
+
+    .wallet-box:hover {
+      border-color: #d4af37;
+      background: #fdf8e7;
     }
 
     .wallet-text {
@@ -131,23 +216,33 @@
       font-size: 14px;
       color: #333;
       flex: 1;
-      margin-right: 10px;
+      margin-right: 15px;
+      font-family: 'Courier New', monospace;
+      font-weight: 500;
     }
 
     .copy-btn {
-      background: #d4af37;
+      background: linear-gradient(135deg, #d4af37 0%, #c19b2c 100%);
       color: #fff;
       border: none;
-      padding: 6px 10px;
-      border-radius: 6px;
+      padding: 8px 15px;
+      border-radius: 8px;
       cursor: pointer;
       font-size: 13px;
-      transition: 0.3s;
+      font-weight: 600;
+      transition: all 0.3s ease;
       white-space: nowrap;
+      box-shadow: 0 2px 8px rgba(212, 175, 55, 0.3);
     }
 
     .copy-btn:hover {
-      background: #b59428;
+      background: linear-gradient(135deg, #c19b2c 0%, #a8841f 100%);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(212, 175, 55, 0.4);
+    }
+
+    .copy-btn:active {
+      transform: translateY(0);
     }
 
     .bottom-nav {
@@ -159,132 +254,346 @@
       justify-content: space-around;
       background: #fff;
       border-top: 2px solid #d4af37;
-      padding: 10px 0;
+      padding: 12px 0;
+      box-shadow: 0 -4px 15px rgba(212, 175, 55, 0.1);
+      z-index: 100;
     }
 
     .bottom-nav a {
       text-align: center;
       text-decoration: none;
-      color: #333;
-      font-size: 14px;
+      color: #666;
+      font-size: 13px;
+      flex: 1;
+      padding: 8px 0;
+      transition: all 0.3s ease;
+      border-radius: 8px;
+      margin: 0 5px;
+    }
+
+    .bottom-nav a i {
+      font-size: 20px;
+      margin-bottom: 5px;
+      display: block;
     }
 
     .bottom-nav a.active {
       color: #d4af37;
       font-weight: bold;
+      background: rgba(212, 175, 55, 0.1);
+    }
+
+    .bottom-nav a:hover:not(.active) {
+      color: #b59428;
+      background: rgba(212, 175, 55, 0.05);
     }
 
     .loading {
       text-align: center;
       padding: 20px;
-      color: #666;
+      color: #b59428;
+      font-style: italic;
+    }
+
+    .loading::after {
+      content: '';
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      border: 2px solid #f3f3f3;
+      border-top: 2px solid #d4af37;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin-left: 10px;
+      vertical-align: middle;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
     }
 
     .error-message {
-      background: #fee;
+      background: linear-gradient(135deg, #fee 0%, #fdd 100%);
       color: #c00;
-      padding: 10px;
-      border-radius: 6px;
-      margin: 10px 0;
+      padding: 15px;
+      border-radius: 10px;
+      margin: 15px 0;
       font-size: 14px;
       display: none;
+      border: 1px solid #f5b7b1;
+      border-left: 4px solid #e74c3c;
+    }
+
+    .success-message {
+      background: linear-gradient(135deg, #e8f8ef 0%, #d5f4e6 100%);
+      color: #27ae60;
+      padding: 15px;
+      border-radius: 10px;
+      margin: 15px 0;
+      font-size: 14px;
+      display: none;
+      border: 1px solid #a3e4d7;
+      border-left: 4px solid #27ae60;
     }
 
     .method-info {
-      margin: 15px 0;
-      padding: 10px;
-      background: #f9f9f9;
-      border-radius: 8px;
-      border: 1px solid #eee;
+      margin: 20px 0;
+      padding: 15px;
+      background: linear-gradient(135deg, #fef9e7 0%, #fcf3cf 100%);
+      border-radius: 10px;
+      border: 1px solid #e9dba9;
     }
-    
-    .debug-info {
+
+    .method-info p {
+      margin: 8px 0;
+      color: #8a6d3b;
+    }
+
+    .method-step {
+      display: flex;
+      align-items: flex-start;
+      margin-bottom: 8px;
+    }
+
+    .step-number {
+      background: #d4af37;
+      color: white;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
       font-size: 12px;
-      color: #666;
-      background: #f5f5f5;
+      font-weight: bold;
+      margin-right: 10px;
+      flex-shrink: 0;
+    }
+
+    .step-text {
+      font-size: 13px;
+      color: #8a6d3b;
+      line-height: 1.4;
+    }
+
+    .amount-display {
+      text-align: center;
+      font-size: 24px;
+      font-weight: bold;
+      color: #d4af37;
+      margin: 10px 0;
       padding: 10px;
-      border-radius: 6px;
+      background: rgba(212, 175, 55, 0.1);
+      border-radius: 10px;
+    }
+
+    .file-input-container {
+      position: relative;
+      overflow: hidden;
+      margin-top: 8px;
+    }
+
+    .file-input-container input[type="file"] {
+      position: absolute;
+      left: 0;
+      top: 0;
+      opacity: 0;
+      width: 100%;
+      height: 100%;
+      cursor: pointer;
+    }
+
+    .file-input-label {
+      display: block;
+      padding: 14px;
+      background: #f9f9f9;
+      border: 2px dashed #e0d7c1;
+      border-radius: 10px;
+      text-align: center;
+      color: #666;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .file-input-label:hover {
+      border-color: #d4af37;
+      background: #fdf8e7;
+      color: #d4af37;
+    }
+
+    .file-input-label i {
+      margin-right: 8px;
+      color: #d4af37;
+    }
+
+    .selected-file {
       margin-top: 10px;
+      font-size: 13px;
+      color: #27ae60;
+      padding: 8px;
+      background: rgba(39, 174, 96, 0.1);
+      border-radius: 6px;
       display: none;
+    }
+
+    @media (max-width: 480px) {
+      .deposit-container {
+        margin: 15px;
+        padding: 20px;
+      }
+      
+      .bottom-nav {
+        padding: 10px 0;
+      }
+      
+      .bottom-nav a {
+        font-size: 12px;
+      }
+      
+      .bottom-nav a i {
+        font-size: 18px;
+      }
+      
+      .modal-content {
+        padding: 20px;
+        margin: 20px;
+      }
     }
   </style>
 </head>
 <body>
   <div class="deposit-container">
-    <h2>Deposit</h2>
+    <h2><i class="fas fa-wallet"></i> Deposit</h2>
 
     <div id="errorMessage" class="error-message"></div>
-    
-    <!-- Debug info (hidden by default) -->
-    <div id="debugInfo" class="debug-info"></div>
+    <div id="successMessage" class="success-message"></div>
 
     <form id="depositForm">
-      <label>Amount (USD)</label>
-      <input type="number" id="depositAmount" required placeholder="Enter amount" min="100" step="any">
-      <div class="note">Minimum deposit is 100 USD</div>
+      <div class="input-group">
+        <label for="depositAmount"><i class="fas fa-dollar-sign"></i> Amount (USD)</label>
+        <input type="number" id="depositAmount" required placeholder="Enter amount" min="100" step="any">
+        <div class="note">Minimum deposit is 100 USD</div>
+      </div>
 
-      <label>Select Method</label>
-      <select id="depositMethod" required onchange="updateMethodDetails()">
-        <option value="">Select a payment method</option>
-      </select>
-      <div id="methodLoading" class="loading" style="display: none;">Loading methods...</div>
+      <div class="input-group">
+        <label for="depositMethod"><i class="fas fa-credit-card"></i> Select Method</label>
+        <select id="depositMethod" required>
+          <option value="">Select a payment method</option>
+        </select>
+        <div id="methodLoading" class="loading" style="display: none;"></div>
+      </div>
 
-      <div id="methodDetails" style="margin:15px 0; display:none;">
+      <div id="methodDetails" style="display:none;">
         <div class="method-info">
-          <p><b>Payment Instructions:</b></p>
-          <p style="font-size: 13px; color: #666; margin: 5px 0;">
-            1. Send the exact amount to the address below<br>
-            2. Take a screenshot of the transaction<br>
-            3. Upload the screenshot as proof
+          <p style="font-weight: bold; margin-bottom: 12px; color: #d4af37;">
+            <i class="fas fa-info-circle"></i> Payment Instructions
           </p>
+          <div class="method-step">
+            <div class="step-number">1</div>
+            <div class="step-text">Send the exact amount to the address below</div>
+          </div>
+          <div class="method-step">
+            <div class="step-number">2</div>
+            <div class="step-text">Take a screenshot of the transaction</div>
+          </div>
+          <div class="method-step">
+            <div class="step-number">3</div>
+            <div class="step-text">Upload the screenshot as proof</div>
+          </div>
         </div>
         
-        <p><b>Wallet Address:</b></p>
+        <div id="amountDisplay" class="amount-display" style="display: none;">
+          <span id="displayAmount">$0</span>
+        </div>
+        
+        <p style="font-weight: 600; margin: 15px 0 8px; color: #555;">
+          <i class="fas fa-wallet"></i> Wallet Address:
+        </p>
         <div class="wallet-box">
           <span id="walletAddress" class="wallet-text"></span>
-          <button type="button" class="copy-btn" onclick="copyAddress()">Copy</button>
+          <button type="button" class="copy-btn" onclick="copyAddress()">
+            <i class="fas fa-copy"></i> Copy
+          </button>
         </div>
         
-        <div id="qrContainer">
-          <p><b>QR Code:</b></p>
+        <div id="qrContainer" style="text-align: center;">
+          <p style="font-weight: 600; margin: 20px 0 8px; color: #555;">
+            <i class="fas fa-qrcode"></i> QR Code:
+          </p>
           <img id="walletQR" class="qr-img" alt="QR Code" onerror="this.style.display='none'">
-          <div id="qrError" style="color: #e74c3c; font-size: 12px; display: none;">QR code not available</div>
+          <div id="qrError" style="color: #e74c3c; font-size: 13px; margin-top: 10px; display: none;">
+            <i class="fas fa-exclamation-triangle"></i> QR code not available
+          </div>
         </div>
       </div>
 
-      <label>Upload Payment Proof (Screenshot)</label>
-      <input type="file" id="screenshot" accept="image/*,.png,.jpg,.jpeg,.webp" required>
-      <div class="note">Upload a clear screenshot of your payment transaction</div>
+      <div class="input-group">
+        <label for="screenshot"><i class="fas fa-camera"></i> Upload Payment Proof</label>
+        <div class="file-input-container">
+          <input type="file" id="screenshot" accept="image/*,.png,.jpg,.jpeg,.webp" required>
+          <div class="file-input-label">
+            <i class="fas fa-cloud-upload-alt"></i> Choose Screenshot
+          </div>
+        </div>
+        <div id="selectedFileName" class="selected-file"></div>
+        <div class="note">Upload a clear screenshot of your payment transaction (Max 5MB)</div>
+      </div>
 
-      <button type="button" id="submitBtn" onclick="openConfirmModal()">I Have Paid</button>
+      <button type="button" id="submitBtn" onclick="openConfirmModal()">
+        <i class="fas fa-check-circle"></i> I Have Paid
+      </button>
     </form>
   </div>
 
   <!-- Confirmation Modal -->
   <div id="confirmModal" class="modal">
     <div class="modal-content">
-      <h3>Confirm Payment</h3>
+      <h3><i class="fas fa-check-circle"></i> Confirm Payment</h3>
       <p>Are you sure you have sent the payment?</p>
-      <p style="font-size: 14px; color: #666; margin: 10px 0;">
-        Please ensure you have:<br>
-        1. Sent the exact amount<br>
-        2. Taken a screenshot<br>
-        3. Double-checked the wallet address
-      </p>
+      
+      <div class="method-info" style="margin: 15px 0; text-align: left;">
+        <div class="method-step">
+          <div class="step-number">✓</div>
+          <div class="step-text">Sent the exact amount</div>
+        </div>
+        <div class="method-step">
+          <div class="step-number">✓</div>
+          <div class="step-text">Taken a screenshot</div>
+        </div>
+        <div class="method-step">
+          <div class="step-number">✓</div>
+          <div class="step-text">Double-checked the wallet address</div>
+        </div>
+      </div>
+      
+      <div style="margin: 20px 0; padding: 15px; background: #f9f9f9; border-radius: 10px;">
+        <p style="margin: 5px 0; color: #555;">
+          <strong>Amount:</strong> <span id="confirmAmount" style="color: #d4af37; font-weight: bold;"></span>
+        </p>
+        <p style="margin: 5px 0; color: #555;">
+          <strong>Method:</strong> <span id="confirmMethod" style="color: #555;"></span>
+        </p>
+      </div>
+      
       <div>
-        <button onclick="submitDeposit()" id="confirmYesBtn">Yes, I Have Paid</button>
-        <button onclick="closeConfirmModal()" style="background: #ccc; color: #333;">No, Cancel</button>
+        <button onclick="submitDeposit()" id="confirmYesBtn">
+          <i class="fas fa-paper-plane"></i> Confirm Payment
+        </button>
+        <button onclick="closeConfirmModal()" style="background: linear-gradient(135deg, #95a5a6 0%, #7f8c8d 100%); color: white;">
+          <i class="fas fa-times"></i> Cancel
+        </button>
       </div>
     </div>
   </div>
 
   <!-- Bottom Navigation -->
   <div class="bottom-nav">
-    <a href="deposit.html" class="active"><i class="fas fa-wallet"></i><br>Deposit</a>
-    <a href="invest.html"><i class="fas fa-piggy-bank"></i><br>Invest</a>
-    <a href="dashboard.html"><i class="fas fa-home"></i><br>Home</a>
-    <a href="withdraw.html"><i class="fas fa-money-bill"></i><br>Withdraw</a>
-    <a href="transfer.html"><i class="fas fa-exchange-alt"></i><br>Transfer</a>
+    <a href="deposit.html" class="active"><i class="fas fa-wallet"></i>Deposit</a>
+    <a href="invest.html"><i class="fas fa-piggy-bank"></i>Invest</a>
+    <a href="dashboard.html"><i class="fas fa-home"></i>Home</a>
+    <a href="withdraw.html"><i class="fas fa-money-bill"></i>Withdraw</a>
+    <a href="transfer.html"><i class="fas fa-exchange-alt"></i>Transfer</a>
   </div>
 
   <script>
@@ -294,17 +603,28 @@
 
     function showError(message) {
       const errorDiv = document.getElementById('errorMessage');
+      const successDiv = document.getElementById('successMessage');
+      
+      successDiv.style.display = 'none';
       errorDiv.textContent = message;
       errorDiv.style.display = 'block';
+      
       setTimeout(() => {
         errorDiv.style.display = 'none';
       }, 5000);
     }
     
-    function showDebugInfo(info) {
-      const debugDiv = document.getElementById('debugInfo');
-      debugDiv.innerHTML = '<strong>Debug Info:</strong><br>' + info;
-      debugDiv.style.display = 'block';
+    function showSuccess(message) {
+      const errorDiv = document.getElementById('errorMessage');
+      const successDiv = document.getElementById('successMessage');
+      
+      errorDiv.style.display = 'none';
+      successDiv.textContent = message;
+      successDiv.style.display = 'block';
+      
+      setTimeout(() => {
+        successDiv.style.display = 'none';
+      }, 5000);
     }
 
     async function loadDepositMethods() {
@@ -312,49 +632,25 @@
       const loading = document.getElementById('methodLoading');
       
       select.disabled = true;
+      select.innerHTML = '<option value="">Loading methods...</option>';
       loading.style.display = 'block';
       
       try {
-        console.log('Fetching deposit methods from:', `${API_BASE}/user/deposit-methods`);
         const res = await fetch(`${API_BASE}/user/deposit-methods`);
         
-        console.log('Response status:', res.status, res.statusText);
-        
         if (!res.ok) {
-          const errorText = await res.text();
-          console.error('Response error text:', errorText);
-          throw new Error(`Failed to load methods: ${res.status} ${res.statusText}\n${errorText}`);
+          throw new Error(`Failed to load methods: ${res.status}`);
         }
         
         const methods = await res.json();
-        console.log('Received methods:', methods);
-        
-        // Show debug info
-        let debugInfo = `Found ${methods?.length || 0} methods<br>`;
-        if (methods && methods.length > 0) {
-          debugInfo += `First method: ${methods[0].name}<br>`;
-          debugInfo += `First method _id: ${methods[0]._id}<br>`;
-          debugInfo += `First method _id type: ${typeof methods[0]._id}<br>`;
-          if (methods[0]._id && typeof methods[0]._id === 'object') {
-            debugInfo += `First method _id keys: ${Object.keys(methods[0]._id).join(', ')}<br>`;
-            debugInfo += `First method _id string: ${methods[0]._id.toString ? methods[0]._id.toString() : 'No toString method'}`;
-          }
-        }
-        showDebugInfo(debugInfo);
-        
-        // Process methods to ensure _id is a string
         depositMethods = methods.map(method => {
           let id = method._id;
           
-          // Handle different _id formats
           if (id && typeof id === 'object') {
-            // If it's an ObjectId object from MongoDB
             if (id.$oid) {
-              id = id.$oid; // MongoDB extended JSON format
+              id = id.$oid;
             } else if (id.toString) {
-              id = id.toString(); // MongoDB ObjectId
-            } else {
-              id = JSON.stringify(id); // Fallback
+              id = id.toString();
             }
           }
           
@@ -363,8 +659,6 @@
             _id: id
           };
         });
-        
-        console.log('Processed methods:', depositMethods);
 
         select.innerHTML = '<option value="">Select a payment method</option>';
         
@@ -386,15 +680,13 @@
         // Auto-select first method if available
         if (depositMethods.length > 0) {
           select.value = depositMethods[0]._id;
-          console.log('Auto-selected method ID:', depositMethods[0]._id);
           updateMethodDetails();
         }
         
       } catch (err) {
         console.error('Error loading deposit methods:', err);
-        console.error('Error stack:', err.stack);
         select.innerHTML = '<option value="" disabled>Error loading methods</option>';
-        showError('Error loading payment methods: ' + err.message);
+        showError('Error loading payment methods. Please try again.');
       } finally {
         loading.style.display = 'none';
       }
@@ -402,17 +694,7 @@
 
     function updateMethodDetails() {
       const id = document.getElementById('depositMethod').value;
-      console.log('Selected ID:', id);
-      console.log('Available methods:', depositMethods);
-      
-      // Find method using string comparison
-      const method = depositMethods.find(m => {
-        console.log(`Comparing: selected="${id}" with method._id="${m._id}" (type: ${typeof m._id})`);
-        return String(m._id) === String(id);
-      });
-      
-      console.log('Found method:', method);
-      
+      const method = depositMethods.find(m => String(m._id) === String(id));
       const detailsDiv = document.getElementById('methodDetails');
       const qrImg = document.getElementById('walletQR');
       const qrError = document.getElementById('qrError');
@@ -420,7 +702,6 @@
       if (method) {
         document.getElementById('walletAddress').innerText = method.address || 'Address not available';
         
-        // Handle QR code
         if (method.qr) {
           qrImg.src = method.qr;
           qrImg.style.display = 'block';
@@ -433,7 +714,6 @@
         detailsDiv.style.display = 'block';
       } else {
         detailsDiv.style.display = 'none';
-        console.warn('No method found for ID:', id);
       }
     }
 
@@ -445,9 +725,16 @@
       }
       
       navigator.clipboard.writeText(address).then(() => {
-        alert('✅ Wallet address copied to clipboard!');
+        const copyBtn = document.querySelector('.copy-btn');
+        const originalText = copyBtn.innerHTML;
+        copyBtn.innerHTML = '<i class="fas fa-check"></i> Copied!';
+        copyBtn.style.background = 'linear-gradient(135deg, #27ae60 0%, #229954 100%)';
+        
+        setTimeout(() => {
+          copyBtn.innerHTML = originalText;
+          copyBtn.style.background = 'linear-gradient(135deg, #d4af37 0%, #c19b2c 100%)';
+        }, 2000);
       }).catch(err => {
-        console.error('Copy failed:', err);
         showError('Failed to copy address');
       });
     }
@@ -455,9 +742,9 @@
     function openConfirmModal() {
       const amount = parseFloat(document.getElementById('depositAmount').value);
       const methodId = document.getElementById('depositMethod').value;
+      const methodSelect = document.getElementById('depositMethod');
+      const methodName = methodSelect.options[methodSelect.selectedIndex].text;
       const screenshot = document.getElementById('screenshot').files[0];
-
-      console.log('Opening confirm modal with:', { amount, methodId, screenshot });
 
       // Validation
       if (!amount || isNaN(amount)) {
@@ -480,7 +767,7 @@
         return;
       }
 
-      // Check file size (max 5MB)
+      // Check file size
       if (screenshot.size > 5 * 1024 * 1024) {
         showError('File too large. Maximum size is 5MB');
         return;
@@ -500,6 +787,10 @@
         return;
       }
 
+      // Update modal content
+      document.getElementById('confirmAmount').textContent = '$' + amount.toFixed(2);
+      document.getElementById('confirmMethod').textContent = methodName;
+      
       document.getElementById('confirmModal').style.display = 'flex';
     }
 
@@ -515,8 +806,6 @@
       const screenshot = document.getElementById('screenshot').files[0];
       const token = localStorage.getItem('token');
       
-      console.log('Submitting deposit:', { amount, methodId, hasScreenshot: !!screenshot, hasToken: !!token });
-      
       if (!token) {
         showError('Session expired. Please login again.');
         setTimeout(() => window.location.href = 'index.html', 1000);
@@ -526,13 +815,13 @@
       isSubmitting = true;
       const submitBtn = document.getElementById('submitBtn');
       const confirmYesBtn = document.getElementById('confirmYesBtn');
-      const originalSubmitText = submitBtn.textContent;
-      const originalConfirmText = confirmYesBtn.textContent;
+      const originalSubmitText = submitBtn.innerHTML;
+      const originalConfirmText = confirmYesBtn.innerHTML;
       
       submitBtn.disabled = true;
-      submitBtn.textContent = 'Processing...';
+      submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
       confirmYesBtn.disabled = true;
-      confirmYesBtn.textContent = 'Processing...';
+      confirmYesBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
 
       const formData = new FormData();
       formData.append('amount', amount);
@@ -540,7 +829,6 @@
       formData.append('screenshot', screenshot);
 
       try {
-        console.log('Sending deposit request to:', `${API_BASE}/deposit`);
         const res = await fetch(`${API_BASE}/deposit`, {
           method: 'POST',
           headers: { 
@@ -549,37 +837,65 @@
           body: formData
         });
 
-        console.log('Deposit response status:', res.status);
         const data = await res.json();
-        console.log('Deposit response data:', data);
         
         if (res.ok) {
-          alert(`✅ ${data.message || 'Deposit submitted successfully!'}\n\nStatus: Pending approval\nAmount: $${amount}\n\nPlease wait for admin approval.`);
+          showSuccess('✅ Deposit submitted successfully! Please wait for admin approval.');
           closeConfirmModal();
+          
           setTimeout(() => {
             window.location.href = 'dashboard.html';
-          }, 1000);
+          }, 2000);
         } else {
           throw new Error(data.error || `Deposit failed: ${res.status}`);
         }
         
       } catch (err) {
-        console.error('Deposit error:', err);
         showError(err.message || 'Error submitting deposit. Please try again.');
         closeConfirmModal();
       } finally {
         isSubmitting = false;
         submitBtn.disabled = false;
-        submitBtn.textContent = originalSubmitText;
+        submitBtn.innerHTML = originalSubmitText;
         confirmYesBtn.disabled = false;
-        confirmYesBtn.textContent = originalConfirmText;
+        confirmYesBtn.innerHTML = originalConfirmText;
       }
     }
 
-    // Load methods on page load
+    // Initialize on page load
     window.onload = function() {
-      console.log('Page loaded, loading deposit methods...');
       loadDepositMethods();
+      
+      // Update amount display
+      document.getElementById('depositAmount').addEventListener('input', function() {
+        const amount = parseFloat(this.value);
+        const amountDisplay = document.getElementById('amountDisplay');
+        
+        if (amount >= 100) {
+          amountDisplay.style.display = 'block';
+          document.getElementById('displayAmount').textContent = '$' + amount.toFixed(2);
+          this.style.borderColor = '#27ae60';
+        } else {
+          amountDisplay.style.display = 'none';
+          this.style.borderColor = amount === 0 ? '#e0d7c1' : '#e74c3c';
+        }
+      });
+      
+      // Update method details when method changes
+      document.getElementById('depositMethod').addEventListener('change', updateMethodDetails);
+      
+      // Show selected file name
+      document.getElementById('screenshot').addEventListener('change', function() {
+        const fileName = this.files[0]?.name;
+        const fileDisplay = document.getElementById('selectedFileName');
+        
+        if (fileName) {
+          fileDisplay.textContent = 'Selected: ' + fileName;
+          fileDisplay.style.display = 'block';
+        } else {
+          fileDisplay.style.display = 'none';
+        }
+      });
     };
 
     // Close modal when clicking outside
@@ -593,16 +909,6 @@
     document.addEventListener('keydown', function(e) {
       if (e.key === 'Escape') {
         closeConfirmModal();
-      }
-    });
-
-    // Validate amount input
-    document.getElementById('depositAmount').addEventListener('input', function() {
-      const amount = parseFloat(this.value);
-      if (amount < 100) {
-        this.style.borderColor = '#e74c3c';
-      } else {
-        this.style.borderColor = '#d4af37';
       }
     });
   </script>
