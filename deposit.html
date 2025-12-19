@@ -197,6 +197,16 @@
       border-radius: 8px;
       border: 1px solid #eee;
     }
+    
+    .debug-info {
+      font-size: 12px;
+      color: #666;
+      background: #f5f5f5;
+      padding: 10px;
+      border-radius: 6px;
+      margin-top: 10px;
+      display: none;
+    }
   </style>
 </head>
 <body>
@@ -204,6 +214,9 @@
     <h2>Deposit</h2>
 
     <div id="errorMessage" class="error-message"></div>
+    
+    <!-- Debug info (hidden by default) -->
+    <div id="debugInfo" class="debug-info"></div>
 
     <form id="depositForm">
       <label>Amount (USD)</label>
@@ -287,6 +300,12 @@
         errorDiv.style.display = 'none';
       }, 5000);
     }
+    
+    function showDebugInfo(info) {
+      const debugDiv = document.getElementById('debugInfo');
+      debugDiv.innerHTML = '<strong>Debug Info:</strong><br>' + info;
+      debugDiv.style.display = 'block';
+    }
 
     async function loadDepositMethods() {
       const select = document.getElementById('depositMethod');
@@ -296,24 +315,66 @@
       loading.style.display = 'block';
       
       try {
+        console.log('Fetching deposit methods from:', `${API_BASE}/user/deposit-methods`);
         const res = await fetch(`${API_BASE}/user/deposit-methods`);
         
+        console.log('Response status:', res.status, res.statusText);
+        
         if (!res.ok) {
-          throw new Error(`Failed to load methods: ${res.status} ${res.statusText}`);
+          const errorText = await res.text();
+          console.error('Response error text:', errorText);
+          throw new Error(`Failed to load methods: ${res.status} ${res.statusText}\n${errorText}`);
         }
         
         const methods = await res.json();
-        depositMethods = methods;
+        console.log('Received methods:', methods);
+        
+        // Show debug info
+        let debugInfo = `Found ${methods?.length || 0} methods<br>`;
+        if (methods && methods.length > 0) {
+          debugInfo += `First method: ${methods[0].name}<br>`;
+          debugInfo += `First method _id: ${methods[0]._id}<br>`;
+          debugInfo += `First method _id type: ${typeof methods[0]._id}<br>`;
+          if (methods[0]._id && typeof methods[0]._id === 'object') {
+            debugInfo += `First method _id keys: ${Object.keys(methods[0]._id).join(', ')}<br>`;
+            debugInfo += `First method _id string: ${methods[0]._id.toString ? methods[0]._id.toString() : 'No toString method'}`;
+          }
+        }
+        showDebugInfo(debugInfo);
+        
+        // Process methods to ensure _id is a string
+        depositMethods = methods.map(method => {
+          let id = method._id;
+          
+          // Handle different _id formats
+          if (id && typeof id === 'object') {
+            // If it's an ObjectId object from MongoDB
+            if (id.$oid) {
+              id = id.$oid; // MongoDB extended JSON format
+            } else if (id.toString) {
+              id = id.toString(); // MongoDB ObjectId
+            } else {
+              id = JSON.stringify(id); // Fallback
+            }
+          }
+          
+          return {
+            ...method,
+            _id: id
+          };
+        });
+        
+        console.log('Processed methods:', depositMethods);
 
         select.innerHTML = '<option value="">Select a payment method</option>';
         
-        if (!methods || methods.length === 0) {
+        if (!depositMethods || depositMethods.length === 0) {
           select.innerHTML += '<option value="" disabled>No payment methods available</option>';
           showError('No deposit methods available. Please contact support.');
           return;
         }
 
-        methods.forEach(m => {
+        depositMethods.forEach(m => {
           const opt = document.createElement("option");
           opt.value = m._id;
           opt.textContent = m.name;
@@ -323,15 +384,17 @@
         select.disabled = false;
         
         // Auto-select first method if available
-        if (methods.length > 0) {
-          select.value = methods[0]._id;
+        if (depositMethods.length > 0) {
+          select.value = depositMethods[0]._id;
+          console.log('Auto-selected method ID:', depositMethods[0]._id);
           updateMethodDetails();
         }
         
       } catch (err) {
         console.error('Error loading deposit methods:', err);
+        console.error('Error stack:', err.stack);
         select.innerHTML = '<option value="" disabled>Error loading methods</option>';
-        showError('Error loading payment methods. Please try again later.');
+        showError('Error loading payment methods: ' + err.message);
       } finally {
         loading.style.display = 'none';
       }
@@ -339,7 +402,17 @@
 
     function updateMethodDetails() {
       const id = document.getElementById('depositMethod').value;
-      const method = depositMethods.find(m => m._id === id);
+      console.log('Selected ID:', id);
+      console.log('Available methods:', depositMethods);
+      
+      // Find method using string comparison
+      const method = depositMethods.find(m => {
+        console.log(`Comparing: selected="${id}" with method._id="${m._id}" (type: ${typeof m._id})`);
+        return String(m._id) === String(id);
+      });
+      
+      console.log('Found method:', method);
+      
       const detailsDiv = document.getElementById('methodDetails');
       const qrImg = document.getElementById('walletQR');
       const qrError = document.getElementById('qrError');
@@ -360,6 +433,7 @@
         detailsDiv.style.display = 'block';
       } else {
         detailsDiv.style.display = 'none';
+        console.warn('No method found for ID:', id);
       }
     }
 
@@ -382,6 +456,8 @@
       const amount = parseFloat(document.getElementById('depositAmount').value);
       const methodId = document.getElementById('depositMethod').value;
       const screenshot = document.getElementById('screenshot').files[0];
+
+      console.log('Opening confirm modal with:', { amount, methodId, screenshot });
 
       // Validation
       if (!amount || isNaN(amount)) {
@@ -439,6 +515,8 @@
       const screenshot = document.getElementById('screenshot').files[0];
       const token = localStorage.getItem('token');
       
+      console.log('Submitting deposit:', { amount, methodId, hasScreenshot: !!screenshot, hasToken: !!token });
+      
       if (!token) {
         showError('Session expired. Please login again.');
         setTimeout(() => window.location.href = 'index.html', 1000);
@@ -462,16 +540,18 @@
       formData.append('screenshot', screenshot);
 
       try {
+        console.log('Sending deposit request to:', `${API_BASE}/deposit`);
         const res = await fetch(`${API_BASE}/deposit`, {
           method: 'POST',
           headers: { 
             'Authorization': `Bearer ${token}`
-            // Note: Don't set Content-Type for FormData, browser sets it automatically with boundary
           },
           body: formData
         });
 
+        console.log('Deposit response status:', res.status);
         const data = await res.json();
+        console.log('Deposit response data:', data);
         
         if (res.ok) {
           alert(`✅ ${data.message || 'Deposit submitted successfully!'}\n\nStatus: Pending approval\nAmount: $${amount}\n\nPlease wait for admin approval.`);
@@ -497,7 +577,10 @@
     }
 
     // Load methods on page load
-    window.onload = loadDepositMethods;
+    window.onload = function() {
+      console.log('Page loaded, loading deposit methods...');
+      loadDepositMethods();
+    };
 
     // Close modal when clicking outside
     document.getElementById('confirmModal').addEventListener('click', function(e) {
